@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Top to Bottom Screen — v5b (Powdercoat Highlight)</title>
+<style>
+  :root{
+    --bg:#f0fdf4; --panel:#ffffff; --border:#bbf7d0;
+    --ink:#0f172a; --muted:#466657; --accent:#16a34a;
+    --accent-weak:#dcfce7; --accent-strong:#15803d;
+    --pc-yellow:#fff7a3; --pc-yellow-border:#fde047;
+  }
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);margin:20px;color:var(--ink)}
+  h1{margin:0;color:var(--accent-strong);font-size:22px;font-weight:900;text-align:center}
+  h2{margin:0 0 10px;font-size:16px;color:#14532d}
+  .container{max-width:1220px;margin:auto;display:grid;grid-template-columns:460px 1fr;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px}
+  label{display:block;margin-top:8px;font-size:12px;color:var(--muted)}
+  input,select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;margin-top:6px}
+  .row{margin-bottom:8px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .headerbar{background:linear-gradient(90deg,var(--accent-weak),#fff);border:1px solid var(--border);border-radius:14px;padding:10px 14px;margin-bottom:14px}
+  .headerbar .actions{display:flex;justify-content:center;gap:8px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{border-bottom:1px solid var(--border);padding:6px 8px;text-align:left}
+  th{background:var(--accent-weak);color:#14532d}
+  .right{text-align:right}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .title-line{font-weight:900;font-size:24px;text-align:center;margin:4px 0 12px;color:#166534}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:var(--accent-weak);font-size:11px;color:#14532d}
+  /* Powdercoat highlight */
+  .pc-on{background:var(--pc-yellow) !important;border-color:var(--pc-yellow-border) !important;box-shadow:0 0 0 2px rgba(253,224,71,.35) inset}
+  .pc-badge{display:inline-block;background:var(--pc-yellow);border:1px solid var(--pc-yellow-border);border-radius:8px;padding:2px 6px;font-weight:700}
+
+  /* Notes highlight */
+  .note-on{background:#fef3c7!important;border-color:#f59e0b!important;outline:2px solid #f59e0b!important;box-shadow:0 0 0 3px rgba(245,158,11,.35) inset}
+  .note-row-on{background:rgba(245,158,11,.12);border-radius:10px}
+  .note-badge{display:inline-block;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:2px 6px;font-weight:700;color:#111}
+</style>
+</head>
+<body>
+  <div class="headerbar">
+    <div class="actions"><button onclick="window.print()">Print / Screenshot</button></div>
+  </div>
+
+  <div class="container">
+    <!-- INPUTS -->
+    <section class="card">
+      <h2>Inputs</h2>
+      <div class="grid2">
+        <div class="row"><label>Width (mm)</label><input id="wmm" type="number" value="1190"></div>
+        <div class="row"><label>Height (mm)</label><input id="hmm" type="number" value="1195"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="row">
+          <label>Accessories Color</label>
+          <select id="acc_color"><option>White</option><option>Black</option></select>
+        </div>
+        <div class="row">
+          <label>Job Type (New or Repair)</label>
+          <select id="job_type">
+          <option value="new">New (Complete)</option>
+          <option value="repair">Repair (Mesh Only)</option>
+        </select>
+        </div>
+      </div>
+      <div class="row"><label>Notes</label><textarea id="notes" rows="2" placeholder="Optional notes…"></textarea></div>
+
+      <div class="grid2">
+        <div class="row">
+          <label>Mesh Color</label>
+          <select id="mesh_color"><option>Black</option><option>Gray</option><option>Charcoal</option><option>Stainless</option></select>
+        </div>
+        <div class="row">
+          <label>Powdercoat</label>
+          <input id="powder" placeholder="e.g., PWD12345">
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="row"><label>Client</label><input id="client" placeholder="Client name"></div>
+        <div class="row"><label>Branch</label><select id="branch"><option>Batangas Client</option><option>Pampanga Branch</option><option>Shipping Thru AP Cargo</option><option>Shipping Thru Victory Drop & Go</option></select></div>
+      </div>
+
+      <div class="row"><label>Status</label><select id="status"><option>New</option><option>Repair</option><option>Warranty</option></select></div>
+
+      <h2>Item Codes</h2>
+      <div class="grid2">
+        <div class="row"><label>Cassette code</label><input id="code_cassette" value="Y088A"></div>
+        <div class="row"><label>Round tube code</label><input id="code_round" value="Y057"></div>
+      </div>
+      <div class="grid2">
+        <div class="row"><label>Drawing bar code</label><input id="code_draw" value="Y033A"></div>
+        <div class="row"><label>Side Rail code</label><input id="code_siderail" value="Y070"></div>
+      </div>
+
+      <h2>Tech Settings (hidden math)</h2>
+      <div class="grid2">
+        <div class="row"><label>Cassette size = W −</label><input id="ded_cass" type="number" value="16"></div>
+        <div class="row"><label>Round tube size = W −</label><input id="ded_round" type="number" value="14"></div>
+      </div>
+      <div class="grid2">
+        <div class="row"><label>Drawing bar size = W −</label><input id="ded_draw" type="number" value="15"></div>
+        <div class="row"><label>Side Rail size = H −</label><input id="ded_siderail" type="number" value="48"></div>
+      </div>
+      <div class="grid2">
+        <div class="row"><label>mesh(H) = H +</label><input id="meshH_add" type="number" value="50"></div>
+        <div class="row"><label>mesh(W) = W −</label><input id="meshW_ded" type="number" value="14"></div>
+      </div>
+    </section>
+
+    <!-- OUTPUTS -->
+    <section class="card">
+      <div class="title-line">TOP TO BOTTOM SCREEN</div>
+
+      <div class="grid2" style="margin-bottom:10px">
+        <div class="card" style="padding:10px">
+          <div><strong>Client:</strong> <span id="o_client" class="mono">—</span></div>
+          <div><strong>Mesh Color:</strong> <span id="o_color" class="mono">—</span></div>
+          <div><strong>Accessories:</strong> <span id="o_acc" class="mono">—</span></div>
+          <div><strong>Powdercoat:</strong> <span id="o_powder" class="mono">No</span></div>
+          <div><strong>Notes:</strong> <span id="o_notes" class="mono">—</span></div>
+        </div>
+        <div class="card" style="padding:10px">
+          <div><strong>Branch:</strong> <span id="o_branch" class="mono">—</span></div>
+          <div><strong>Size (W×H mm):</strong> <span id="o_size" class="mono">—</span></div>
+          <div><span class="pill" id="o_status">New</span></div>
+        </div>
+      </div>
+
+      <div id="cuttings_block">
+<h2 id="cuttings_header">Aluminum cuttings (mm)</h2>
+      <table id="cuttings_table">
+        <thead><tr><th>Material</th><th>item</th><th class="right">size</th><th class="right">pc</th></tr></thead>
+        <tbody>
+          <tr><td>Cassette</td><td class="mono" id="itm_cass">—</td><td class="right mono" id="len_cass">—</td><td class="right">1</td></tr>
+          <tr><td>Round tube</td><td class="mono" id="itm_round">—</td><td class="right mono" id="len_round">—</td><td class="right">1</td></tr>
+          <tr><td>Drawing bar</td><td class="mono" id="itm_draw">—</td><td class="right mono" id="len_draw">—</td><td class="right">1</td></tr>
+          <tr><td>Side Rail</td><td class="mono" id="itm_siderail">—</td><td class="right mono" id="len_siderail">—</td><td class="right">2</td></tr>
+        </tbody>
+      </table>
+</div>
+
+      <h2 style="margin-top:12px">MESH DETAILS</h2>
+      <table>
+        <thead><tr><th>item</th><th class="right">size</th><th class="right">pc</th></tr></thead>
+        <tbody>
+          <tr><td>mesh(H)</td><td class="right mono" id="meshH">—</td><td class="right">1</td></tr>
+          <tr style="background:#fff7cc"><td>mesh(W)</td><td class="right mono" id="meshW">—</td><td class="right">1</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function setPowderHighlight(on){
+    const inp=$('powder');
+    if(on){ inp.classList.add('pc-on'); $('o_powder').className='mono pc-badge'; }
+    else{ inp.classList.remove('pc-on'); $('o_powder').className='mono'; }
+  }
+
+  function setNotesHighlight(on){
+    const inp=document.getElementById('notes');
+    const out=document.getElementById('o_notes');
+    if(!inp||!out) return;
+    const row = inp.closest ? inp.closest('.row') : inp.parentElement;
+    if(on){ inp.classList.add('note-on'); if(row) row.classList.add('note-row-on'); out.className='mono note-badge'; }
+    else { inp.classList.remove('note-on'); if(row) row.classList.remove('note-row-on'); out.className='mono'; }
+  }
+  
+function getRepair(){
+  try{
+    var list = document.querySelectorAll('select[id="job_type"], select[id="replacement"]');
+    if (!list || !list.length) return false;
+    for (var i=0;i<list.length;i++){
+      var v = (list[i].value||'').toLowerCase();
+      if (v === 'repair' || v === 'yes') return true;
+    }
+    return false;
+  }catch(e){ return false; }
+}
+
+function compute(){
+    const w=+$('wmm').value||0, h=+$('hmm').value||0;
+    const acc = $('acc_color') ? $('acc_color').value : '';
+    const job = ($('job_type') && $('job_type').value) || 'new';
+    
+    // Robust repair detection across duplicate selects
+    let repl = (job === 'repair');
+    try {
+      const jobs = Array.from(document.querySelectorAll('select[id="job_type"]'));
+      if (jobs.length) {
+        repl = jobs.some(el => (el.value||'').toLowerCase() === 'repair');
+      }
+    } catch(e) { /* fallback to existing 'repl' */ }
+    
+    const notes = ($('notes') && $('notes').value || '').trim();
+    $('o_color').textContent=$('mesh_color').value;
+    $('o_acc').textContent = acc || '—';
+    $('o_notes').textContent = notes || '—';
+    setNotesHighlight(!!notes);
+    const powder=$('powder').value.trim();
+    $('o_powder').textContent = powder ? `Yes (${powder})` : 'No';
+    setPowderHighlight(!!powder);
+    $('o_branch').textContent=$('branch').value;
+    $('o_size').textContent=`${w} × ${h}`;
+    $('o_status').textContent=$('status').value;
+    $('o_client').textContent=$('client').value||'—';
+
+    $('itm_cass').textContent=$('code_cassette').value;
+    $('itm_round').textContent=$('code_round').value;
+    $('itm_draw').textContent=$('code_draw').value;
+    $('itm_siderail').textContent=$('code_siderail').value;
+
+    const ct = $('cuttings_table'); if (ct) ct.style.display = repl ? 'none' : '';
+    const ch = $('cuttings_header'); if (ch) ch.style.display = repl ? 'none' : '';
+    const cb = $('cuttings_block'); if (cb) cb.style.display = repl ? 'none' : '';
+
+    if(!(w>0&&h>0)){ ['len_cass','len_round','len_draw','len_siderail','meshH','meshW'].forEach(id=>$(id).textContent='—'); return; }
+    const ded_cass=+$('ded_cass').value||0, ded_round=+$('ded_round').value||0, ded_draw=+$('ded_draw').value||0, ded_siderail=+$('ded_siderail').value||0, meshH_add=+$('meshH_add').value||0, meshW_ded=+$('meshW_ded').value||0;
+    $('len_cass').textContent=w-ded_cass;
+    $('len_round').textContent=w-ded_round;
+    $('len_draw').textContent=w-ded_draw;
+    $('len_siderail').textContent=h-ded_siderail;
+    $('meshH').textContent=h+meshH_add;
+    $('meshW').textContent=w-meshW_ded;
+  }
+
+  const ids=['wmm','hmm','mesh_color','powder','client','branch','status','code_cassette','code_round','code_draw','code_siderail','ded_cass','ded_round','ded_draw','ded_siderail','meshH_add','meshW_ded','acc_color','job_type','notes'];
+  ids.forEach(id=>{ const el=$(id); const evt=(el.tagName==='SELECT')?'change':'input'; el.addEventListener(evt, compute); });
+  window.addEventListener('DOMContentLoaded', compute);
+
+  // NOTES-HOT-BIND: trigger compute & highlight on typing
+  (function(){
+    var n = document.getElementById('notes');
+    if(!n) return;
+    n.addEventListener('input', compute);
+  })();
+
+  // JOBTYPE-HOT-BIND
+  (function(){
+    var j=document.getElementById('job_type');
+    if(!j) return;
+    j.addEventListener('change', compute);
+  })();
+
+  // JOBTYPE-HOT-BIND (all duplicates)
+  (function(){
+    var list = document.querySelectorAll('select[id="job_type"]');
+    list.forEach(function(el){ el.addEventListener('change', compute); });
+  })();
+
+
+  // ACC-COLOR-HOT-BIND (handles duplicate selects)
+  (function(){
+    var list = document.querySelectorAll('select[id="acc_color"]');
+    list.forEach(function(el){ el.addEventListener('change', compute); });
+  })();
+
+
+  // JOBTYPE-HOT-BIND (ensure compute on change for any duplicates)
+  (function(){
+    var list = document.querySelectorAll('select[id="job_type"]');
+    list.forEach(function(el){ el.addEventListener('change', compute); });
+  })();
+
+
+  // SYNC & HOT-BIND: accessories color (all duplicates)
+  (function(){
+    var list = document.querySelectorAll('select[id="acc_color"]');
+    list.forEach(function(el){
+      el.addEventListener('change', function(e){
+        var v = e.target.value;
+        list.forEach(function(other){ if(other!==el) other.value = v; });
+        compute();
+      });
+    });
+  })();
+
+  // SYNC & HOT-BIND: job type (all duplicates)
+  (function(){
+    var list = document.querySelectorAll('select[id="job_type"]');
+    list.forEach(function(el){
+      el.addEventListener('change', function(e){
+        var v = e.target.value;
+        list.forEach(function(other){ if(other!==el) other.value = v; });
+        compute();
+      });
+    });
+  })();
+
+
+  // LIVE BINDERS (reinforce)
+  (function(){
+    var accs = document.querySelectorAll('select[id="acc_color"]');
+    accs.forEach(function(el){
+      el.addEventListener('change', function(e){
+        var v=e.target.value; accs.forEach(function(o){ if(o!==el) o.value=v; }); compute();
+      });
+    });
+    var jobs = document.querySelectorAll('select[id="job_type"], select[id="replacement"]');
+    jobs.forEach(function(el){
+      el.addEventListener('change', function(e){
+        var v=e.target.value; jobs.forEach(function(o){ if(o!==el) o.value=v; }); compute();
+      });
+    });
+  })();
+
+</script>
+</body>
+</html>

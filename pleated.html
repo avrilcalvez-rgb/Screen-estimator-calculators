@@ -1,0 +1,385 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pleated Screen Calculator — v8 Balanced</title>
+<style>
+  :root{
+    --bg:#0F172A; --panel:#111827; --ink:#E5E7EB; --muted:#94A3B8; --border:#1F2937; --accent:#38BDF8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:14px 18px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  header h1{margin:0;font-size:16px;font-weight:700}
+  .wrap{max-width:1200px;margin:16px auto 24px;padding:0 14px;display:grid;grid-template-columns:380px 1fr;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px}
+  /* INPUTS: readable */
+  h2{margin:0 0 10px;font-size:15px}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+  input, select, textarea{width:100%;background:#0B1220;color:var(--ink);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px}
+  textarea{min-height:64px}
+  .row{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center;margin-bottom:10px}
+  .btns{display:flex;gap:8px;margin-top:6px}
+  button{border:1px solid var(--border);background:#0B1220;color:var(--ink);padding:10px 12px;border-radius:10px;cursor:pointer}
+  button.primary{background:var(--accent);color:#0B1220;border-color:var(--accent);font-weight:700}
+  /* OUTPUTS: compact */
+  .title-line{font-weight:900;font-size:20px;text-align:center;margin:6px 0 10px;letter-spacing:.4px}
+  .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .meta-block{padding:8px;border:1px solid var(--border);border-radius:10px;background:#0B1220;font-size:13px}
+  .meta-block .row-line{display:flex;justify-content:space-between;margin:3px 0}
+  table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.2}
+  th,td{border-bottom:1px solid var(--border);padding:6px 6px;text-align:left}
+  th{color:var(--muted);background:#0B1322}
+  .right{text-align:right}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .section{margin-top:8px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media print{
+    header,.no-print{display:none!important}
+    body{background:white;color:black}
+    .wrap{grid-template-columns:1fr 1fr;gap:10px;margin:0 auto}
+    .card{break-inside: avoid}
+    .title-line{font-size:20px;margin:4px 0 8px}
+    th,td{padding:5px 5px}
+  }
+
+  /* Powdercoat highlight */
+  .pc-on{background:#fff7a3!important;border-color:#fde047!important;box-shadow:0 0 0 2px rgba(253,224,71,.35) inset}
+  .pc-badge{display:inline-block;background:#fff7a3;border:1px solid #fde047;border-radius:8px;padding:2px 6px;font-weight:700}
+  /* stronger visibility even in dark themes */
+  .pc-on{background:#fff7a3!important;border-color:#facc15!important;outline:2px solid #facc15!important;box-shadow:0 0 0 3px rgba(250,204,21,.55) inset,0 0 0 2px rgba(250,204,21,.35);color-scheme:light}
+  .pc-row-on{background:rgba(250,204,21,.12);border-radius:10px}
+  /* Readability: black text in powdercoat area only */
+  .pc-on{ color:#111 !important; caret-color:#111 !important; }
+  .pc-row-on label{ color:#111 !important; }
+  .pc-badge{ color:#111 !important; }
+
+
+
+  /* Notes highlight */
+  .note-on{background:#fef3c7!important;border-color:#f59e0b!important;outline:2px solid #f59e0b!important;box-shadow:0 0 0 3px rgba(245,158,11,.35) inset}
+  .note-row-on{background:rgba(245,158,11,.12);border-radius:10px}
+  .note-badge{display:inline-block;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:2px 6px;font-weight:700;color:#111}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Pleated Screen — Calculator (Balanced)</h1>
+  <div class="no-print">
+    <button onclick="window.print()">Print / Screenshot</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- Inputs (left) -->
+  <section class="card">
+    <h2>Inputs</h2>
+    <div class="row"><label>Direction</label>
+      <select id="direction">
+        <option>One Way</option>
+        <option>Two Way</option>
+      </select>
+    </div>
+    <div class="row"><label>Width (mm)</label><input id="width_mm" type="number" min="1" step="1" value="760"></div>
+    <div class="row"><label>Height (mm)</label><input id="height_mm" type="number" min="1" step="1" value="2090"></div>
+    <div class="row"><label>Mesh Color</label>
+      <select id="mesh_color">
+        <option>Black</option>
+        <option>Gray</option>
+      </select>
+    </div>
+    <div class="row"><label>Accessories Color</label>
+      <select id="acc_color">
+        <option>White</option>
+        <option>Black</option>
+      </select>
+    </div>
+    <div class="row"><label>Job Type (New or Repair)</label>
+      <select id="replacement">
+        <option value="new">New (Complete)</option>
+        <option value="repair">Repair (Mesh Only)</option>
+      </select>
+    </div>
+    <div class="row"><label>Powdercoat Code</label><input id="powder_code" placeholder="e.g., A1533"></div>
+    <div class="row"><label>Client</label><input id="client" placeholder="Client name"></div>
+    <div class="row"><label>Branch</label>
+      <select id="branch">
+        <option>Batangas Branch</option>
+        <option>Pampanga Branch</option>
+        <option>Shipping Thru AP Cargo</option>
+        <option>Shipping Thru Victory Drop & Go</option>
+      </select>
+    </div>
+    <div class="row"><label>Notes</label><textarea id="notes" placeholder="Optional notes…"></textarea></div>
+    <div class="btns no-print">
+      <button id="compute">Compute</button>
+      <button class="primary" onclick="window.print()">Print / Screenshot</button>
+    </div>
+  </section>
+
+  <!-- Output / Print Sheet (right, compact) -->
+  <section class="card">
+    <div id="big_mode_header" class="title-line">ONE WAY PLEATED SCREEN</div>
+
+    <div class="meta-grid">
+      <div class="meta-block">
+        <div class="row-line"><span>Client:</span><span id="out_client" class="mono">—</span></div>
+        <div class="row-line"><span>Mesh:</span><span id="out_mesh_color" class="mono">—</span></div>
+        <div class="row-line"><span>Accessories:</span><span id="out_accessories" class="mono">—</span></div>
+        <div class="row-line"><span>Powdercoat:</span><span id="out_powder" class="mono">No</span></div>
+        <div class="row-line"><span>Notes:</span><span id="out_notes" class="mono">—</span></div>
+      </div>
+      <div class="meta-block">
+        <div class="row-line"><span>Size (W×H):</span><span id="out_size" class="mono">—</span></div>
+        <div class="row-line"><span>Branch:</span><span id="out_branch" class="mono">—</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div id="cuttings_block">
+<h2 id="cuttings_header">Aluminum cuttings (mm)</h2>
+      <div id="cuttings_notice" style="display:none;font-size:12px;color:#64748b;margin:6px 0 8px;">Aluminum cuttings are not needed for <strong>Mesh Repair</strong>.</div>
+      <table>
+        <thead><tr><th>Material</th><th class="right">Qty</th><th class="right">Length (mm)</th></tr></thead>
+        <tbody id="cuttings_body">
+          <tr><td>Side frame (X023)</td><td class="right mono">x2</td><td class="right mono" id="len_side_frame">—</td></tr>
+          <tr><td>Top profile (X022)</td><td class="right mono">x1</td><td class="right mono" id="len_top_profile">—</td></tr>
+          <tr><td>PVC</td><td class="right mono">x1</td><td class="right mono" id="len_pvc">—</td></tr>
+          <tr><td>Bottom profile (X023)</td><td class="right mono">x1</td><td class="right mono" id="len_bottom_profile">—</td></tr>
+          <tr><td>Inner frame (X024)</td><td class="right mono">x2</td><td class="right mono" id="len_inner_frame">—</td></tr>
+          <tr><td>Middle profile (X025)</td><td class="right mono">x1</td><td class="right mono" id="len_middle_profile">—</td></tr>
+        </tbody>
+      </table>
+</div>
+    </div>
+
+    <div class="section two-col">
+      <div>
+        <h2>Mesh Details</h2>
+        <table>
+          <thead><tr><th>Item</th><th>Color</th><th class="right">Value</th></tr></thead>
+          <tbody>
+            <tr><td>mesh(H)</td><td id="mesh_color_cell">—</td><td class="right mono" id="mesh_h_value">—</td></tr>
+            <tr id="mesh_fold_total_row"><td>mesh(fold)</td><td>—</td><td class="right mono" id="mesh_fold_value">—</td></tr>
+            <tr id="mesh_fold_per_leaf_row" style="display:none"><td>mesh(fold per leaf)</td><td>—</td><td class="right mono" id="mesh_fold_per_leaf_value">—</td></tr>
+
+            <tr id="mesh_fold_left_row" style="display:none"><td>mesh(fold left)</td><td>—</td><td class="right mono" id="mesh_fold_left_value">—</td></tr>
+            <tr id="mesh_fold_right_row" style="display:none"><td>mesh(fold right)</td><td>—</td><td class="right mono" id="mesh_fold_right_value">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h2>Hold Distances</h2>
+        <table>
+          <thead><tr><th>Seq</th><th class="right">Distance (mm)</th></tr></thead>
+          <tbody id="holes_table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Rope Sizes</h2>
+      <table>
+        <thead><tr><th>#</th><th class="right">Size (mm)</th><th class="right">pc</th></tr></thead>
+        <tbody id="rope_table"></tbody>
+      </table>
+    </div>
+
+  </section>
+</div>
+
+<script>
+  function holesByHeight(h){
+    if (h <= 1000) return 4;
+    if (h <= 2000) return 6;
+    if (h <= 2500) return 8;
+    if (h <= 3000) return 10;
+    return 12;
+  }
+  function escalate(holes){
+    if (holes===4) return 6;
+    if (holes===6) return 8;
+    if (holes===8) return 10;
+    if (holes===10) return 12;
+    return 12;
+  }
+
+  function setNotesHighlight(on){
+    var inp = document.getElementById('notes');
+    var out = document.getElementById('out_notes');
+    if (!inp || !out) return;
+    var row = inp.closest ? inp.closest('.row') : inp.parentElement;
+    if (on){ inp.classList.add('note-on'); if(row) row.classList.add('note-row-on'); if(out) out.className='mono note-badge'; }
+    else { inp.classList.remove('note-on'); if(row) row.classList.remove('note-row-on'); if(out) out.className='mono'; }
+  }
+
+  function setPowderHighlight(on){
+    var inp = document.getElementById('powder_code');
+    var out = document.getElementById('out_powder');
+    if (!inp || !out) return;
+    var row = inp.closest ? inp.closest('.row') : inp.parentElement;
+    if (on){ inp.classList.add('pc-on'); out.className='mono pc-badge'; if(row) row.classList.add('pc-row-on'); }
+    else { inp.classList.remove('pc-on'); out.className='mono'; if(row) row.classList.remove('pc-row-on'); }
+  }
+
+  function compute(){
+    const dir = document.getElementById('direction').value; // One Way / Two Way
+    const w = +document.getElementById('width_mm').value || 0;
+    const h = +document.getElementById('height_mm').value || 0;
+    const meshColor = document.getElementById('mesh_color').value;
+    const client = document.getElementById('client').value.trim();
+    const branch = document.getElementById('branch').value;
+    const powder = document.getElementById('powder_code').value.trim();
+    const notes = document.getElementById('notes').value.trim();
+
+    // Header & meta
+    document.getElementById('big_mode_header').textContent = (dir === 'One Way') ? 'ONE WAY PLEATED SCREEN' : 'TWO WAY PLEATED SCREEN';
+    document.getElementById('out_client').textContent = client || '—';
+    document.getElementById('out_branch').textContent = branch;
+    document.getElementById('out_size').textContent = `${w} × ${h}`;
+    var job = (document.getElementById('replacement')||{}).value || 'new';
+    var replacementOnly = (job === 'repair');
+    var ct = document.getElementById('cuttings_table'); if (ct) ct.style.display = replacementOnly ? 'none' : '';
+    var cb = document.getElementById('cuttings_block'); if (cb) cb.style.display = replacementOnly ? 'none' : '';
+    var cn = document.getElementById('cuttings_notice'); if (cn) cn.style.display = replacementOnly ? 'none' : '';
+    var ch = document.getElementById('cuttings_header'); if (ch) ch.style.display = replacementOnly ? 'none' : '';
+    var ch = document.getElementById('cuttings_header'); if (ch) ch.style.display = replacementOnly ? 'none' : '';
+    document.getElementById('out_mesh_color').textContent = meshColor;
+    var acc = (document.getElementById('acc_color')||{}).value || '';
+    var oa = document.getElementById('out_accessories'); if(oa) oa.textContent = acc || '—';
+    var acc = (document.getElementById('acc_color')||{}).value || '';
+    var outAcc = document.getElementById('out_accessories'); if(outAcc) outAcc.textContent = acc || '—';
+    document.getElementById('mesh_color_cell').textContent = meshColor;
+    document.getElementById('out_notes').textContent = notes || '—';
+    document.getElementById('out_powder').textContent = powder ? `Yes (${powder})` : 'No';
+
+    if(!w || !h){ return; }
+
+    // Cuttings (rules fixed)
+    const len_side_frame     = h - 51;
+    const len_top_profile    = w - 51;
+    const len_pvc            = h - 40;
+    const len_bottom_profile = w - 51;
+    const len_inner_frame    = h - 40;
+    const len_middle_profile = h - 100;
+
+    document.getElementById('len_side_frame').textContent     = (len_side_frame).toLocaleString();
+    document.getElementById('len_top_profile').textContent    = (len_top_profile).toLocaleString();
+    document.getElementById('len_pvc').textContent            = (len_pvc).toLocaleString();
+    document.getElementById('len_bottom_profile').textContent = (len_bottom_profile).toLocaleString();
+    document.getElementById('len_inner_frame').textContent    = (len_inner_frame).toLocaleString();
+    document.getElementById('len_middle_profile').textContent = (len_middle_profile).toLocaleString();
+
+    // Mesh details
+    const meshH = h - 40;
+    const meshFold = Math.round(w / 20);
+    document.getElementById('mesh_h_value').textContent = meshH.toLocaleString();
+    document.getElementById('mesh_fold_value').textContent = meshFold.toLocaleString();
+    var perLeaf = (dir === 'Two Way') ? Math.round(meshFold/2) : null;
+    var totalRow = document.getElementById('mesh_fold_total_row');
+    var L = document.getElementById('mesh_fold_left_row');
+    var R = document.getElementById('mesh_fold_right_row');
+    var PL = document.getElementById('mesh_fold_per_leaf_row');
+    if (totalRow) totalRow.style.display = (dir === 'Two Way') ? 'none' : '';
+    if (L) L.style.display = (dir === 'Two Way') ? '' : 'none';
+    if (R) R.style.display = (dir === 'Two Way') ? '' : 'none';
+    if (PL) PL.style.display = (dir === 'Two Way') ? 'none' : PL.style.display; /* hide per-leaf when Two Way */
+    if (perLeaf != null){
+      var LV = document.getElementById('mesh_fold_left_value');
+      var RV = document.getElementById('mesh_fold_right_value');
+      if(LV) LV.textContent = perLeaf.toLocaleString();
+      if(RV) RV.textContent = perLeaf.toLocaleString();
+    }    var L = document.getElementById('mesh_fold_left_row');
+    var R = document.getElementById('mesh_fold_right_row');
+    if (L) L.style.display = (dir === 'Two Way') ? '' : 'none';
+    if (R) R.style.display = (dir === 'Two Way') ? '' : 'none';
+    if (perLeaf != null){ document.getElementById('mesh_fold_left_value').textContent = perLeaf.toLocaleString(); document.getElementById('mesh_fold_right_value').textContent = perLeaf.toLocaleString(); }
+    var perLeaf = (dir === 'Two Way') ? Math.round(meshFold/2) : null;
+    var row = document.getElementById('mesh_fold_per_leaf_row');
+    if (row) row.style.display = (dir === 'Two Way') ? '' : 'none';
+    if (perLeaf != null) document.getElementById('mesh_fold_per_leaf_value').textContent = perLeaf.toLocaleString();
+
+    // Holes & gap
+    let holes = holesByHeight(h);
+    const gapOf = (holes)=> (meshH - 60) / (holes - 1);
+    let gap = gapOf(holes);
+    while (gap > 350 && holes < 12){
+      holes = escalate(holes);
+      gap = gapOf(holes);
+    }
+    const holesBody = document.getElementById('holes_table');
+    holesBody.innerHTML = '';
+    let pos = 30;
+    for(let i=1;i<=holes;i++){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i}</td><td class="right mono">${Math.round(pos)}</td>`;
+      holesBody.appendChild(tr);
+      pos += gap;
+    }
+
+    // Rope sizes
+    const maxRopes = Math.min(Math.floor(holes/2), 6);
+    const firstRope = w + h + 300;
+    const qty = (dir === 'One Way') ? 2 : 4;
+    const ropeBody = document.getElementById('rope_table');
+    ropeBody.innerHTML = '';
+    for(let i=0;i<maxRopes;i++){
+      const val = Math.round(firstRope - i*gap);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i+1}</td><td class="right mono">${val.toLocaleString()}</td><td class="right mono">${qty}</td>`;
+      ropeBody.appendChild(tr);
+    }
+  }
+
+  document.getElementById('compute').addEventListener('click', compute);
+  document.addEventListener('DOMContentLoaded', compute);
+
+  // --- LIVE AUTO-UPDATE ---
+  (function(){
+    var ids = ['direction','width_mm','height_mm','mesh_color','acc_color','replacement','powder_code','client','branch','notes'];
+    function bind(){
+      ids.forEach(function(id){
+        var el = document.getElementById(id);
+        if(!el) return;
+        var evt = (el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') ? 'change' : 'input';
+        el.addEventListener(evt, compute);
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function(){ bind(); compute(); });
+    } else {
+      bind(); compute();
+    }
+  })();
+
+  // POWDER-HOT-BIND: ensure highlight toggles on typing
+  (function(){
+    var p = document.getElementById('powder_code');
+    if(!p) return;
+    function toggle(){ setPowderHighlight(!!(p.value||'').trim()); }
+    p.addEventListener('input', toggle);
+    // initialize once
+    toggle();
+  })();
+
+  // NOTES-HOT-BIND: highlight notes when typing
+  (function(){
+    var n = document.getElementById('notes');
+    if(!n) return;
+    function t(){ setNotesHighlight(!!(n.value||'').trim()); }
+    n.addEventListener('input', t);
+    t();
+  })();
+
+  // REPLACEMENT-HOT-BIND: toggle cuttings block on job type change
+  (function(){
+    var r = document.getElementById('replacement');
+    if(!r) return;
+    r.addEventListener('change', compute);
+  })();
+</script>
+</body>
+</html>
