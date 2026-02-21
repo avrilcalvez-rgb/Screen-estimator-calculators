@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Screen Calculator — One Way & Two Way</title>
+<style>
+:root{--bg:#0F172A;--panel:#111827;--ink:#E5E7EB;--muted:#94A3B8;--border:#1F2937;--accent:#10b981}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:14px 18px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+header h1{margin:0;font-size:16px;font-weight:700}
+.wrap{max-width:1200px;margin:16px auto 24px;padding:0 14px;display:grid;grid-template-columns:400px 1fr;gap:14px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px}
+h2{margin:0 0 10px;font-size:15px;color:var(--accent)}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+input,select,textarea{width:100%;background:#0B1220;color:var(--ink);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px}
+.row{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center;margin-bottom:10px}
+.btns{display:flex;gap:8px;margin-top:6px}
+button{border:1px solid var(--border);background:#0B1220;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer;font-size:13px}
+button.primary{background:var(--accent);color:#0B1220;border-color:var(--accent);font-weight:700}
+.title-line{font-weight:900;font-size:20px;text-align:center;margin:6px 0 10px;letter-spacing:.4px;color:var(--accent)}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.meta-block{padding:8px;border:1px solid var(--border);border-radius:10px;background:#0B1220;font-size:13px}
+.meta-block .row-line{display:flex;justify-content:space-between;margin:3px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.2}
+th,td{border-bottom:1px solid var(--border);padding:6px 6px;text-align:left}
+th{color:var(--muted);background:#0B1322;font-weight:600}
+.right{text-align:right}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.section{margin-top:12px}
+@media print{header,.no-print{display:none!important}body{background:white;color:black}.wrap{grid-template-columns:1fr;gap:10px;margin:0 auto}.card{break-inside:avoid}th,td{padding:5px}}
+.pc-on{background:#fff7a3!important;border-color:#facc15!important;outline:2px solid #facc15!important;box-shadow:0 0 0 3px rgba(250,204,21,.55) inset;color:#111!important;caret-color:#111!important}
+.pc-badge{display:inline-block;background:#fff7a3;border:1px solid #fde047;border-radius:8px;padding:2px 6px;font-weight:700;color:#111!important}
+.note-on{background:#fef3c7!important;border-color:#f59e0b!important;outline:2px solid #f59e0b!important}
+.note-badge{background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:2px 6px;font-weight:700;color:#111}
+.mode-switch{display:inline-flex;background:#0B1220;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.mode-switch button{border:none;border-radius:0;padding:8px 20px;background:transparent;color:var(--muted);font-size:13px}
+.mode-switch button.active{background:var(--accent);color:#0B1220;font-weight:700}
+.info-box{background:#064e3b;border:1px solid #059669;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:12px;color:#d1fae5}
+.info-box strong{color:#6ee7b7}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔒 Security Screen Calculator</h1>
+  <div class="mode-switch no-print">
+    <button id="btn_oneway" class="active" onclick="switchMode('oneway')">One Way</button>
+    <button id="btn_twoway" onclick="switchMode('twoway')">Two Way</button>
+  </div>
+  <button class="primary no-print" onclick="window.print()">🖨 Print</button>
+</header>
+
+<div class="wrap">
+  <!-- LEFT: Inputs -->
+  <section class="card">
+    <h2>Inputs</h2>
+    
+    <div class="row">
+      <label>Mode</label>
+      <select id="mode" onchange="switchModeFromDropdown()">
+        <option value="oneway">One Way</option>
+        <option value="twoway">Two Way</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>Width (mm)</label>
+      <input id="width_mm" type="number" min="1" step="1" value="1000" oninput="compute()">
+    </div>
+
+    <div class="row">
+      <label>Height (mm)</label>
+      <input id="height_mm" type="number" min="1" step="1" value="2142" oninput="compute()">
+    </div>
+
+    <div class="row" id="direction_row">
+      <label>Direction</label>
+      <select id="direction">
+        <option>Left → Right</option>
+        <option>Right → Left</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>Client</label>
+      <input id="client" placeholder="Client name">
+    </div>
+
+    <div class="row">
+      <label>Branch</label>
+      <select id="branch">
+        <option>Batangas Client</option>
+        <option>Pampanga Client</option>
+        <option>Shipping Thru AP Cargo</option>
+        <option>Shipping Thru Victory Drop & Go</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>Powdercoat Code</label>
+      <input id="powder_code" placeholder="e.g., PWD12345" oninput="setPowderHighlight(!!this.value.trim())">
+    </div>
+
+    <div class="row">
+      <label>Notes</label>
+      <textarea id="notes" rows="2" placeholder="Optional notes…" oninput="setNotesHighlight(!!this.value.trim())"></textarea>
+    </div>
+
+    <div class="btns no-print">
+      <button class="primary" onclick="window.print()">Print</button>
+    </div>
+
+    <!-- Info boxes for mesh calculation -->
+    <div id="oneway_info" class="info-box" style="display:none">
+      <strong>One Way Mesh Sizes:</strong><br>
+      8cm = 78.5mm | 6cm = 59.5mm | 4cm = 40mm<br>
+      Used when remaining space allows (even numbers only)
+    </div>
+
+    <div id="twoway_info" class="info-box" style="display:none">
+      <strong>Two Way Mesh Sizes:</strong><br>
+      8cm = 78.5mm | 6cm = 59.5mm<br>
+      Auto-calculated for left and right sides
+    </div>
+
+  </section>
+
+  <!-- RIGHT: Outputs -->
+  <section class="card">
+    <div id="title_header" class="title-line">ONE WAY SECURITY SCREEN</div>
+
+    <div class="meta-grid">
+      <div class="meta-block">
+        <div class="row-line"><span>Client:</span><span id="out_client" class="mono">—</span></div>
+        <div class="row-line"><span>Branch:</span><span id="out_branch" class="mono">—</span></div>
+        <div class="row-line"><span>Direction:</span><span id="out_direction" class="mono">—</span></div>
+      </div>
+      <div class="meta-block">
+        <div class="row-line"><span>Size (W×H):</span><span id="out_size" class="mono">—</span></div>
+        <div class="row-line"><span>Powdercoat:</span><span id="out_powder" class="mono">No</span></div>
+        <div class="row-line"><span>Notes:</span><span id="out_notes" class="mono">—</span></div>
+      </div>
+    </div>
+
+    <!-- CUTTINGS TABLE -->
+    <div class="section">
+      <h2>Aluminum Cuttings (mm)</h2>
+      <table>
+        <thead><tr><th>Material</th><th class="right">Qty</th><th class="right">Length (mm)</th></tr></thead>
+        <tbody>
+          <tr><td>WL4016-Side frame</td><td class="right mono">×<span id="qty_sideframe">2</span></td><td class="right mono" id="len_sideframe">—</td></tr>
+          <tr><td>WL3418-Pull rod</td><td class="right mono">×<span id="qty_pullrod">1</span></td><td class="right mono" id="len_pullrod">—</td></tr>
+          <tr><td>WL4026-Upper rail</td><td class="right mono">×1</td><td class="right mono" id="len_upperrail">—</td></tr>
+          <tr><td>WL4013-Bottom rail</td><td class="right mono">×1</td><td class="right mono" id="len_bottomrail">—</td></tr>
+          <tr><td>Mesh length</td><td class="right mono">×1</td><td class="right mono" id="len_mesh">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- MESH PLAN -->
+    <div class="section">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <h2 id="mesh_plan_title" style="margin:0">Mesh Plan — One Way</h2>
+        <div style="background:#1e293b;border:2px solid var(--accent);border-radius:8px;padding:6px 12px">
+          <span style="color:var(--accent);font-weight:700;font-size:13px">→ Use Mesh Stock: </span>
+          <span id="mesh_stock_rec_header" style="color:var(--accent);font-weight:700;font-size:14px;font-family:monospace">—</span>
+        </div>
+      </div>
+      
+      <!-- ONE WAY MESH TABLE -->
+      <table id="oneway_mesh_table" style="display:none">
+        <thead><tr><th>Item</th><th class="right">Value</th></tr></thead>
+        <tbody>
+          <tr><td>Usable width (mm)</td><td class="right mono" id="usable_width">—</td></tr>
+          <tr><td>8 cm pieces (78.5mm each)</td><td class="right mono" id="mesh_8cm">—</td></tr>
+          <tr><td>6 cm pieces (59.5mm each)</td><td class="right mono" id="mesh_6cm">—</td></tr>
+          <tr><td>4 cm pieces (40mm each)</td><td class="right mono" id="mesh_4cm">—</td></tr>
+          <tr style="background:#422006;border-top:2px solid #78350f">
+            <td><strong style="color:#fde68a">Final Remaining Space (+5mm)</strong></td>
+            <td class="right"><strong id="remaining_oneway" style="color:#fde68a;font-family:monospace">— mm</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- TWO WAY MESH TABLE -->
+      <table id="twoway_mesh_table" style="display:none">
+        <thead><tr><th>Item</th><th class="right">Left</th><th class="right">Right</th><th class="right">Total</th></tr></thead>
+        <tbody>
+          <tr style="display:none"><td>Door width (minus 94mm)</td><td class="right mono" colspan="3" id="door_width">—</td></tr>
+          <tr><td>8 cm pieces (78.5mm each)</td><td class="right mono" id="mesh_8cm_left">—</td><td class="right mono" id="mesh_8cm_right">—</td><td class="right mono" id="mesh_8cm_total">—</td></tr>
+          <tr><td>6 cm pieces (59.5mm each)</td><td class="right mono" id="mesh_6cm_left">—</td><td class="right mono" id="mesh_6cm_right">—</td><td class="right mono" id="mesh_6cm_total">—</td></tr>
+          <tr><td>4 cm pieces (40mm each)</td><td class="right mono" id="mesh_4cm_left">—</td><td class="right mono" id="mesh_4cm_right">—</td><td class="right mono" id="mesh_4cm_total">—</td></tr>
+          <tr><td>Total mesh width (mm)</td><td class="right mono" colspan="3" id="total_mesh_width">—</td></tr>
+          <tr><td>Remaining space per side (+5mm)</td><td class="right mono" colspan="3" id="remaining_twoway">—</td></tr>
+        </tbody>
+      </table>
+
+      <!-- TWO WAY ADJUSTERS TABLE -->
+      <div id="twoway_adjusters" style="display:none;margin-top:12px">
+        <h2>Adjusting Materials — Per Side</h2>
+        <table>
+          <thead><tr><th>Adjuster</th><th class="right">Size (mm)</th><th class="right">Right</th><th class="right">Left</th><th class="right">Total</th></tr></thead>
+          <tbody>
+            <tr><td>WL1019 (hooked)</td><td class="right mono">0</td><td class="right mono" id="tw_adj_wl1019_r">—</td><td class="right mono" id="tw_adj_wl1019_l">—</td><td class="right mono" id="tw_adj_wl1019_t">—</td></tr>
+            <tr><td>WL1316</td><td class="right mono">10</td><td class="right mono" id="tw_adj_wl1316_r">—</td><td class="right mono" id="tw_adj_wl1316_l">—</td><td class="right mono" id="tw_adj_wl1316_t">—</td></tr>
+            <tr><td>WL0816</td><td class="right mono">5</td><td class="right mono" id="tw_adj_wl0816_r">—</td><td class="right mono" id="tw_adj_wl0816_l">—</td><td class="right mono" id="tw_adj_wl0816_t">—</td></tr>
+            <tr><td>WL1417 (hooked)</td><td class="right mono">3</td><td class="right mono" id="tw_adj_wl1417_r">—</td><td class="right mono" id="tw_adj_wl1417_l">—</td><td class="right mono" id="tw_adj_wl1417_t">—</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px;font-size:12px;color:var(--muted)">
+          Total adjustment per side: <span id="tw_total_adjustment" style="color:var(--ink);font-weight:600">— mm</span>
+        </div>
+      </div>
+
+      <!-- ONE WAY ADJUSTING MATERIALS (shown last) -->
+      <div id="oneway_adjusters" style="margin-top:12px">
+        <h2>Adjusting Materials</h2>
+        <table>
+          <thead><tr><th>Adjuster</th><th class="right">Size (mm)</th><th class="right">Qty</th></tr></thead>
+          <tbody>
+            <tr><td>WL1019 (hooked)</td><td class="right mono">0</td><td class="right mono" id="adj_wl1019">—</td></tr>
+            <tr><td>WL1316</td><td class="right mono">10</td><td class="right mono" id="adj_wl1316">—</td></tr>
+            <tr><td>WL0816</td><td class="right mono">5</td><td class="right mono" id="adj_wl0816">—</td></tr>
+            <tr><td>WL1417 (hooked)</td><td class="right mono">3</td><td class="right mono" id="adj_wl1417">—</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px;font-size:12px;color:var(--muted)">
+          Total adjustment: <span id="total_adjustment" style="color:var(--ink);font-weight:600">— mm</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+var currentMode = 'oneway';
+
+// Adjuster Map - based on target remaining space (mm)
+// RULE: WL1019 (0mm hooked) and WL1417 (3mm hooked) are MUTUALLY EXCLUSIVE
+// Must COMPLETELY FILL the remaining space
+var ADJUSTER_MAP = [
+  {gap:0,  wl1019:1, wl1316:0, wl0816:0, wl1417:0, achieved:0},
+  {gap:1,  wl1019:1, wl1316:0, wl0816:0, wl1417:0, achieved:0},
+  {gap:2,  wl1019:1, wl1316:0, wl0816:0, wl1417:0, achieved:0},
+  {gap:3,  wl1019:0, wl1316:0, wl0816:0, wl1417:1, achieved:3},
+  {gap:4,  wl1019:1, wl1316:0, wl0816:1, wl1417:0, achieved:5},
+  {gap:5,  wl1019:1, wl1316:0, wl0816:1, wl1417:0, achieved:5},
+  {gap:6,  wl1019:1, wl1316:0, wl0816:1, wl1417:0, achieved:5},
+  {gap:7,  wl1019:1, wl1316:0, wl0816:1, wl1417:0, achieved:5},
+  {gap:8,  wl1019:0, wl1316:0, wl0816:1, wl1417:1, achieved:8},
+  {gap:9,  wl1019:1, wl1316:1, wl0816:0, wl1417:0, achieved:10},
+  {gap:10, wl1019:1, wl1316:1, wl0816:0, wl1417:0, achieved:10},
+  {gap:11, wl1019:1, wl1316:1, wl0816:0, wl1417:0, achieved:10},
+  {gap:12, wl1019:1, wl1316:1, wl0816:0, wl1417:0, achieved:10},
+  {gap:13, wl1019:0, wl1316:1, wl0816:0, wl1417:1, achieved:13},
+  {gap:14, wl1019:1, wl1316:1, wl0816:1, wl1417:0, achieved:15},
+  {gap:15, wl1019:1, wl1316:1, wl0816:1, wl1417:0, achieved:15},
+  {gap:16, wl1019:1, wl1316:1, wl0816:1, wl1417:0, achieved:15},
+  {gap:17, wl1019:1, wl1316:1, wl0816:1, wl1417:0, achieved:15},
+  {gap:18, wl1019:0, wl1316:1, wl0816:1, wl1417:1, achieved:18},
+  {gap:19, wl1019:1, wl1316:2, wl0816:0, wl1417:0, achieved:20},
+  {gap:20, wl1019:1, wl1316:2, wl0816:0, wl1417:0, achieved:20},
+  {gap:21, wl1019:1, wl1316:2, wl0816:0, wl1417:0, achieved:20},
+  {gap:22, wl1019:1, wl1316:2, wl0816:0, wl1417:0, achieved:20},
+  {gap:23, wl1019:0, wl1316:2, wl0816:0, wl1417:1, achieved:23},
+  {gap:24, wl1019:1, wl1316:2, wl0816:1, wl1417:0, achieved:25},
+  {gap:25, wl1019:1, wl1316:2, wl0816:1, wl1417:0, achieved:25},
+  {gap:26, wl1019:1, wl1316:2, wl0816:1, wl1417:0, achieved:25},
+  {gap:27, wl1019:1, wl1316:2, wl0816:1, wl1417:0, achieved:25},
+  {gap:28, wl1019:0, wl1316:2, wl0816:1, wl1417:1, achieved:28},
+  {gap:29, wl1019:1, wl1316:3, wl0816:0, wl1417:0, achieved:30},
+  {gap:30, wl1019:1, wl1316:3, wl0816:0, wl1417:0, achieved:30},
+  {gap:31, wl1019:1, wl1316:3, wl0816:0, wl1417:0, achieved:30},
+  {gap:32, wl1019:1, wl1316:3, wl0816:0, wl1417:0, achieved:30},
+  {gap:33, wl1019:0, wl1316:3, wl0816:0, wl1417:1, achieved:33},
+  {gap:34, wl1019:1, wl1316:3, wl0816:1, wl1417:0, achieved:35},
+  {gap:35, wl1019:1, wl1316:3, wl0816:1, wl1417:0, achieved:35},
+  {gap:36, wl1019:1, wl1316:3, wl0816:1, wl1417:0, achieved:35},
+  {gap:37, wl1019:1, wl1316:3, wl0816:1, wl1417:0, achieved:35},
+  {gap:38, wl1019:0, wl1316:3, wl0816:1, wl1417:1, achieved:38},
+  {gap:39, wl1019:1, wl1316:4, wl0816:0, wl1417:0, achieved:40},
+  {gap:40, wl1019:1, wl1316:4, wl0816:0, wl1417:0, achieved:40},
+  {gap:41, wl1019:1, wl1316:4, wl0816:0, wl1417:0, achieved:40},
+  {gap:42, wl1019:1, wl1316:4, wl0816:0, wl1417:0, achieved:40},
+  {gap:43, wl1019:0, wl1316:4, wl0816:0, wl1417:1, achieved:43},
+  {gap:44, wl1019:1, wl1316:4, wl0816:1, wl1417:0, achieved:45},
+  {gap:45, wl1019:1, wl1316:4, wl0816:1, wl1417:0, achieved:45},
+  {gap:46, wl1019:1, wl1316:4, wl0816:1, wl1417:0, achieved:45},
+  {gap:47, wl1019:1, wl1316:4, wl0816:1, wl1417:0, achieved:45},
+  {gap:48, wl1019:0, wl1316:4, wl0816:1, wl1417:1, achieved:48},
+  {gap:49, wl1019:1, wl1316:5, wl0816:0, wl1417:0, achieved:50},
+  {gap:50, wl1019:1, wl1316:5, wl0816:0, wl1417:0, achieved:50}
+];
+
+function getAdjusters(targetGap){
+  // Round to nearest mm
+  var gap = Math.round(targetGap);
+  
+  // Clamp to 0-50 range (expanded from 30 to cover all cases)
+  gap = Math.max(0, Math.min(50, gap));
+  
+  // Find the adjuster combination
+  var adj = ADJUSTER_MAP.find(function(a){ return a.gap === gap; });
+  if(!adj) adj = ADJUSTER_MAP[0]; // fallback to 0mm
+  
+  return adj;
+}
+
+function computeCost(meshLengthMm, adj, adjMultiplier){
+  // adjMultiplier = 1 for one way, 2 for two way (both sides)
+  var meshMeters = meshLengthMm / 1000;
+  var meshCost = meshMeters * 1.22;
+  var wl1019Cost = adj.wl1019 * adjMultiplier * 3.48;
+  var wl1316Cost = adj.wl1316 * adjMultiplier * 4.80;
+  var wl0816Cost = adj.wl0816 * adjMultiplier * 3.48;
+  var wl1417Cost = adj.wl1417 * adjMultiplier * 3.78;
+  var grandTotal = meshCost + wl1019Cost + wl1316Cost + wl0816Cost + wl1417Cost;
+
+  document.getElementById('cost_mesh_qty').textContent = meshMeters.toFixed(2) + ' m';
+  document.getElementById('cost_mesh_total').textContent = 'US$' + meshCost.toFixed(2);
+  document.getElementById('cost_wl1019_qty').textContent = adj.wl1019 * adjMultiplier;
+  document.getElementById('cost_wl1019_total').textContent = 'US$' + wl1019Cost.toFixed(2);
+  document.getElementById('cost_wl1316_qty').textContent = adj.wl1316 * adjMultiplier;
+  document.getElementById('cost_wl1316_total').textContent = 'US$' + wl1316Cost.toFixed(2);
+  document.getElementById('cost_wl0816_qty').textContent = adj.wl0816 * adjMultiplier;
+  document.getElementById('cost_wl0816_total').textContent = 'US$' + wl0816Cost.toFixed(2);
+  document.getElementById('cost_wl1417_qty').textContent = adj.wl1417 * adjMultiplier;
+  document.getElementById('cost_wl1417_total').textContent = 'US$' + wl1417Cost.toFixed(2);
+  document.getElementById('cost_grand_total').textContent = 'US$' + grandTotal.toFixed(2);
+}
+
+function displayAdjusters(adj){
+  document.getElementById('adj_wl1019').textContent = adj.wl1019;
+  document.getElementById('adj_wl1316').textContent = adj.wl1316;
+  document.getElementById('adj_wl0816').textContent = adj.wl0816;
+  document.getElementById('adj_wl1417').textContent = adj.wl1417;
+  document.getElementById('total_adjustment').textContent = adj.achieved + ' mm';
+}
+
+function switchMode(mode){
+  currentMode = mode;
+  document.getElementById('mode').value = mode;
+  document.getElementById('btn_oneway').classList.toggle('active', mode==='oneway');
+  document.getElementById('btn_twoway').classList.toggle('active', mode==='twoway');
+  
+  document.getElementById('title_header').textContent = mode==='oneway' ? 'ONE WAY SECURITY SCREEN' : 'TWO WAY SECURITY SCREEN';
+  document.getElementById('mesh_plan_title').textContent = mode==='oneway' ? 'Mesh Plan — One Way' : 'Mesh Plan — Two Way';
+  
+  document.getElementById('direction_row').style.display = mode==='oneway' ? '' : 'none';
+  document.getElementById('out_direction').closest('.row-line').style.display = mode==='oneway' ? '' : 'none';
+  
+  document.getElementById('oneway_info').style.display = mode==='oneway' ? '' : 'none';
+  document.getElementById('twoway_info').style.display = mode==='twoway' ? '' : 'none';
+  
+  document.getElementById('oneway_mesh_table').style.display = mode==='oneway' ? '' : 'none';
+  document.getElementById('twoway_mesh_table').style.display = mode==='twoway' ? '' : 'none';
+  document.getElementById('twoway_adjusters').style.display = mode==='twoway' ? '' : 'none';
+  document.getElementById('oneway_adjusters').style.display = mode==='oneway' ? '' : 'none';
+  
+  // Update pull rod qty (1 for one-way, 2 for two-way)
+  document.getElementById('qty_pullrod').textContent = mode==='oneway' ? '1' : '2';
+  
+  compute();
+}
+
+function switchModeFromDropdown(){
+  switchMode(document.getElementById('mode').value);
+}
+
+function setPowderHighlight(on){
+  var inp = document.getElementById('powder_code');
+  var out = document.getElementById('out_powder');
+  if(on){
+    inp.classList.add('pc-on');
+    out.className = 'mono pc-badge';
+    out.textContent = 'Yes (' + inp.value + ')';
+  } else {
+    inp.classList.remove('pc-on');
+    out.className = 'mono';
+    out.textContent = 'No';
+  }
+}
+
+function setNotesHighlight(on){
+  var inp = document.getElementById('notes');
+  var out = document.getElementById('out_notes');
+  if(on){
+    inp.classList.add('note-on');
+    out.className = 'mono note-badge';
+    out.textContent = inp.value;
+  } else {
+    inp.classList.remove('note-on');
+    out.className = 'mono';
+    out.textContent = '—';
+  }
+}
+
+function compute(){
+  var w = +document.getElementById('width_mm').value || 0;
+  var h = +document.getElementById('height_mm').value || 0;
+  var client = document.getElementById('client').value.trim();
+  var branch = document.getElementById('branch').value;
+  var direction = document.getElementById('direction').value;
+  var powder = document.getElementById('powder_code').value.trim();
+  var notes = document.getElementById('notes').value.trim();
+  
+  // Update meta
+  document.getElementById('out_client').textContent = client || '—';
+  document.getElementById('out_branch').textContent = branch;
+  document.getElementById('out_direction').textContent = currentMode==='oneway' ? direction : 'Two Way';
+  document.getElementById('out_size').textContent = w&&h ? w+' × '+h : '—';
+  setPowderHighlight(!!powder);
+  setNotesHighlight(!!notes);
+  
+  if(!w || !h){
+    ['len_sideframe','len_pullrod','len_upperrail','len_bottomrail','len_mesh'].forEach(function(id){
+      document.getElementById(id).textContent = '—';
+    });
+    return;
+  }
+  
+  // CUTTINGS (same for both modes)
+  var sideframe = (h - 15);
+  var pullrod = (h - 78);
+  var upperrail = (w - 32);
+  var bottomrail = (w - 32);
+  var meshLength = (h - 86);
+  document.getElementById('len_sideframe').textContent = sideframe.toFixed(2);
+  document.getElementById('len_pullrod').textContent = pullrod.toFixed(2);
+  document.getElementById('len_upperrail').textContent = upperrail.toFixed(2);
+  document.getElementById('len_bottomrail').textContent = bottomrail.toFixed(2);
+  document.getElementById('len_mesh').textContent = meshLength.toFixed(2);
+  
+  // MESH STOCK RECOMMENDATION (2.3m, 2.5m, 3m)
+  var meshStockRec = '';
+  if(meshLength <= 2300){
+    meshStockRec = '2.3m (2300mm)';
+  } else if(meshLength <= 2500){
+    meshStockRec = '2.5m (2500mm)';
+  } else if(meshLength <= 3000){
+    meshStockRec = '3m (3000mm)';
+  } else {
+    meshStockRec = '⚠ Exceeds 3m stock!';
+  }
+  document.getElementById('mesh_stock_rec_header').textContent = meshStockRec;
+  
+  if(currentMode === 'oneway'){
+    computeOneWay(w, h);
+  } else {
+    computeTwoWay(w, h);
+  }
+}
+
+function computeOneWay(w, h){
+  var usableWidth = w - 64;
+  document.getElementById('usable_width').textContent = usableWidth + ' mm';
+  
+  var mesh_8cm_width = 78.5;
+  var mesh_6cm_width = 59.5;
+  var mesh_4cm_width = 40;
+  var base_4cm_qty = 2;  // Fixed edge pieces (separate from center mesh)
+  
+  // KEY INSIGHT: The 2 edge pieces are SEPARATE
+  // The 8cm/6cm/4cm center mesh fills the FULL usable width
+  var availableSpace = usableWidth;  // Don't subtract edges!
+  
+  // Step 1: Maximize 8cm first
+  var max8 = 2 * Math.floor(availableSpace / (2 * mesh_8cm_width));
+  var best = null;
+  
+  // Try from max 8cm downward, stop as soon as adjusters <= 4
+  for(var n8 = max8; n8 >= 0; n8 -= 2){
+    var after8 = availableSpace - (n8 * mesh_8cm_width);
+    var finalAfter8 = after8 + 5;
+    var max6 = 2 * Math.floor(finalAfter8 / (2 * mesh_6cm_width));
+    
+    var foundGood = false;
+    for(var n6 = max6; n6 >= 0; n6 -= 2){
+      var after6 = finalAfter8 - (n6 * mesh_6cm_width);
+      var max4 = 2 * Math.floor(after6 / 40);
+      
+      for(var n4 = max4; n4 >= 0; n4 -= 2){
+        if(n4 > n6 && n6 > 0) continue; // 4cm must not exceed 6cm
+        var final = after6 - (n4 * mesh_4cm_width);
+        if(final < 0) continue;
+        
+        // Check adjuster total qty
+        var adj = getAdjusters(final);
+        var adjTotal = adj.wl1019 + adj.wl1316 + adj.wl0816 + adj.wl1417;
+        
+        if(adjTotal <= 4){
+          // Good solution — pick smallest final remaining, prefer more 8cm
+          if(best === null || final < best.final || (final === best.final && n8 > best.n8)){
+            best = {n8: n8, n6: n6, n4: n4, final: final};
+          }
+          foundGood = true;
+        }
+      }
+    }
+    // If we found a valid solution at this 8cm level, stop reducing 8cm further
+    if(foundGood) break;
+  }
+  
+  // Fallback: just use max 8cm with no 6cm/4cm
+  if(!best) best = {n8: max8, n6: 0, n4: 0, final: availableSpace - (max8 * mesh_8cm_width) + 5};
+  
+  var suggest_8cm = best.n8;
+  var suggest_6cm = best.n6;
+  var finalRemaining = best.final;
+  var total_4cm = best.n4;
+  
+  document.getElementById('mesh_8cm').textContent = suggest_8cm;
+  document.getElementById('mesh_6cm').textContent = suggest_6cm;
+  document.getElementById('mesh_4cm').textContent = total_4cm;
+  document.getElementById('remaining_oneway').textContent = finalRemaining.toFixed(1) + ' mm';
+  
+  // Calculate adjusters based on final remaining space
+  var adj = getAdjusters(finalRemaining);
+  displayAdjusters(adj);
+  
+  // Cost calculation - get mesh length from the computed value
+  var meshLengthMm = h - 86;
+  computeCost(meshLengthMm, adj, 1);
+}
+
+function computeTwoWay(w, h){
+  var doorWidth = w - 94;
+  document.getElementById('door_width').textContent = doorWidth.toFixed(2) + ' mm';
+  
+  var mesh_8cm_width = 78.5;
+  var mesh_6cm_width = 59.5;
+  var mesh_4cm_width = 40;
+  
+  // Find best combination: maximize 8cm, minimize remaining, adjusters <= 4
+  var availableSpace = doorWidth;
+  var best = null;
+  var max8 = 4 * Math.floor(availableSpace / (4 * mesh_8cm_width));
+  
+  for(var n8 = max8; n8 >= 0; n8 -= 4){
+    var after8 = availableSpace - (n8 * mesh_8cm_width);
+    var max6 = 4 * Math.floor((after8 + 16) / (4 * mesh_6cm_width)); // +16mm tolerance for compression
+    var foundAtThisLevel = false;
+    
+    for(var n6 = max6; n6 >= 0; n6 -= 4){
+      var after6 = after8 - (n6 * mesh_6cm_width);
+      var max4 = 4 * Math.floor((after6 + 16) / (4 * mesh_4cm_width)); // +16mm tolerance
+      
+      for(var n4 = max4; n4 >= 0; n4 -= 4){
+        if(n4 > 0 && n6 === 0) continue; // 4cm cannot be used without 6cm
+        if(n4 > n6 && n6 > 0) continue;  // 4cm must not exceed 6cm count
+        if(n8 <= n6 + n4 && !(n6 === 0 && n4 === 0)) continue; // 8cm must be majority
+        var remainingTotal = after6 - (n4 * mesh_4cm_width);
+        var remainingPerSide = (remainingTotal / 2) + 5;
+        if(remainingPerSide < -2) continue; // allow up to -2mm compression per side
+        if(remainingPerSide > 50) continue; // outside adjuster range
+        
+        var adj = getAdjusters(Math.max(0, remainingPerSide));
+        var adjTotal = adj.wl1019 + adj.wl1316 + adj.wl0816 + adj.wl1417;
+        
+        if(adjTotal <= 4){
+          if(best === null || remainingPerSide < best.remainingPerSide){
+            best = {n8: n8, n6: n6, n4: n4, remainingPerSide: remainingPerSide};
+          }
+          foundAtThisLevel = true;
+        }
+      }
+    }
+    if(foundAtThisLevel) break;
+  }
+  
+  // Fallback: use max 8cm with no 6cm/4cm only if nothing found at all
+  if(!best){
+    // Try reducing 8cm until remaining per side <= 50mm (within adjuster range)
+    for(var fb8 = max8; fb8 >= 0; fb8 -= 4){
+      var fbRem = (availableSpace - (fb8 * mesh_8cm_width)) / 2 + 5;
+      if(fbRem <= 50){ best = {n8: fb8, n6: 0, n4: 0, remainingPerSide: fbRem}; break; }
+    }
+    if(!best) best = {n8: max8, n6: 0, n4: 0, remainingPerSide: (availableSpace - (max8 * mesh_8cm_width)) / 2 + 5};
+  }
+  
+  var total_8cm = best.n8;
+  var total_6cm = best.n6;
+  var total_4cm = best.n4;
+  var perSide_8cm = total_8cm / 2;
+  var perSide_6cm = total_6cm / 2;
+  var perSide_4cm = total_4cm / 2;
+  var totalMeshWidth = (total_8cm * mesh_8cm_width) + (total_6cm * mesh_6cm_width) + (total_4cm * mesh_4cm_width);
+  var remainingPerSide = best.remainingPerSide;
+  
+  document.getElementById('mesh_8cm_left').textContent = perSide_8cm;
+  document.getElementById('mesh_8cm_right').textContent = perSide_8cm;
+  document.getElementById('mesh_8cm_total').textContent = total_8cm;
+  document.getElementById('mesh_6cm_left').textContent = perSide_6cm;
+  document.getElementById('mesh_6cm_right').textContent = perSide_6cm;
+  document.getElementById('mesh_6cm_total').textContent = total_6cm;
+  document.getElementById('mesh_4cm_left').textContent = perSide_4cm;
+  document.getElementById('mesh_4cm_right').textContent = perSide_4cm;
+  document.getElementById('mesh_4cm_total').textContent = total_4cm;
+  document.getElementById('total_mesh_width').textContent = totalMeshWidth.toFixed(2) + ' mm';
+  document.getElementById('remaining_twoway').textContent = remainingPerSide.toFixed(1) + ' mm per side';
+  
+  // Adjusters based on remaining per side
+  var adj = getAdjusters(remainingPerSide);
+  
+  // Hide one-way adjuster section values
+  document.getElementById('adj_wl1019').textContent = '—';
+  document.getElementById('adj_wl1316').textContent = '—';
+  document.getElementById('adj_wl0816').textContent = '—';
+  document.getElementById('adj_wl1417').textContent = '—';
+  document.getElementById('total_adjustment').textContent = '— mm';
+  
+  // Show two-way adjusters (same per side, left and right)
+  document.getElementById('twoway_adjusters').style.display = '';
+  document.getElementById('tw_adj_wl1019_r').textContent = adj.wl1019;
+  document.getElementById('tw_adj_wl1019_l').textContent = adj.wl1019;
+  document.getElementById('tw_adj_wl1019_t').textContent = adj.wl1019 * 2;
+  document.getElementById('tw_adj_wl1316_r').textContent = adj.wl1316;
+  document.getElementById('tw_adj_wl1316_l').textContent = adj.wl1316;
+  document.getElementById('tw_adj_wl1316_t').textContent = adj.wl1316 * 2;
+  document.getElementById('tw_adj_wl0816_r').textContent = adj.wl0816;
+  document.getElementById('tw_adj_wl0816_l').textContent = adj.wl0816;
+  document.getElementById('tw_adj_wl0816_t').textContent = adj.wl0816 * 2;
+  document.getElementById('tw_adj_wl1417_r').textContent = adj.wl1417;
+  document.getElementById('tw_adj_wl1417_l').textContent = adj.wl1417;
+  document.getElementById('tw_adj_wl1417_t').textContent = adj.wl1417 * 2;
+  document.getElementById('tw_total_adjustment').textContent = adj.achieved + ' mm per side';
+
+  // Cost calculation - two way uses adjMultiplier=2 (both sides)
+  var meshLengthMm = h - 86;
+  computeCost(meshLengthMm, adj, 2);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function(){
+  switchMode('oneway');
+  compute();
+});
+</script>
+
+</body>
+</html>
