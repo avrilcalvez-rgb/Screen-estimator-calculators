@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Polycarbonate Accordion Calculator — V9</title>
+  <title>Polycarbonate Accordion Calculator — V10</title>
   <style>
     :root{
       --bg:#fff7ed; --panel:#ffffff; --border:#fed7aa;
@@ -24,6 +24,7 @@
     .btns{ display:flex; gap:8px; margin-top:10px }
     button{ padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:white; cursor:pointer }
     button.primary{ background:var(--accent); color:white; border-color:var(--accent); font-weight:700 }
+    button.save{ background:linear-gradient(135deg,#facc15,#f59e0b); color:#1a0a00; border-color:#facc15; font-weight:700 }
     table{ width:100%; border-collapse: collapse; font-size:13px; background:white }
     th,td{ border-bottom:1px solid var(--border); padding:6px 6px; text-align:left }
     th{ background:var(--accent-weak); color:var(--muted) }
@@ -31,32 +32,27 @@
     .mono{ font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace }
     .title-line{ font-weight:900; font-size:20px; text-align:center; margin: 4px 0 10px; color:var(--accent-strong) }
     .small{ font-size:12px; color:var(--muted) }
-    .pill{ display:inline-block; padding:2px 8px; border:1px solid var(--border); border-radius:9999px; background:var(--accent-weak); font-size:12px; color:var(--muted) }
     .hidden{ display:none !important }
     .headerbar{ display:flex; align-items:center; justify-content:space-between; background:linear-gradient(90deg,var(--accent-weak),#fff); border:1px solid var(--border); border-radius:14px; padding:10px 14px; margin-bottom:14px }
     .hi-box{ background:var(--hi); border:1px solid var(--hi-border); border-radius:10px; padding:10px 12px; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap }
     .subpill{ font-weight:600; padding:4px 8px; border-radius:8px; background:#fff; border:1px dashed var(--hi-border) }
-  
-    /* Yellow badge for highlighted outputs (Notes/Powdercoat) */
-    .note-badge{
-      display:inline-block;
-      background: var(--hi);
-      border: 1px solid var(--hi-border);
-      border-radius: 8px;
-      padding: 2px 6px;
-      font-weight: 700;
-      color: var(--ink);
-    }
+    .note-badge{ display:inline-block; background:var(--hi); border:1px solid var(--hi-border); border-radius:8px; padding:2px 6px; font-weight:700; color:var(--ink); }
+    #save_msg{ font-size:12px; margin-top:6px; min-height:16px; }
   </style>
 </head>
 <body>
+
   <div class="headerbar">
     <h1 id="header_title">POLYCARBONATE ACCORDION — ONE WAY</h1>
-    <button class="primary" onclick="window.print()">Print / Screenshot</button>
+    <div style="display:flex;gap:8px">
+      <button class="primary" onclick="window.print()">Print / Screenshot</button>
+      <button class="save" onclick="saveToSheets()">💾 Save to Sheet</button>
+    </div>
   </div>
 
   <div class="container">
-    <!-- Inputs -->
+
+    <!-- ══════ INPUTS ══════ -->
     <section class="card">
       <h2>Inputs</h2>
 
@@ -95,8 +91,8 @@
         <div class="row">
           <label for="panel_color">Panel Color</label>
           <select id="panel_color">
-            <option>Transparent</option>
-            <option>Frosted</option>
+            <option value="Transparent">Transparent PVC</option>
+            <option value="Frosted">Frosted PVC</option>
           </select>
         </div>
         <div class="row">
@@ -110,7 +106,7 @@
           <label for="purpose">Purpose</label>
           <select id="purpose">
             <option>For CR</option>
-            <option>For Inside Devider</option>
+            <option>For Inside Divider</option>
             <option>For Outdoor</option>
           </select>
         </div>
@@ -120,7 +116,7 @@
             <option>Batangas Client</option>
             <option>Pampanga Branch</option>
             <option>Shipping Thru AP Cargo</option>
-            <option>Shipping Thru Victory Drop & Go</option>
+            <option>Shipping Thru Victory Drop &amp; Go</option>
           </select>
         </div>
       </div>
@@ -138,11 +134,11 @@
           <option>Warranty</option>
         </select>
       </div>
+
       <div class="row">
         <label for="notes">Notes</label>
         <textarea id="notes" rows="2" placeholder="Add job notes here..."></textarea>
       </div>
-    
 
       <h2>Formula‑168 Constants (match your sheet)</h2>
       <div class="grid2">
@@ -168,10 +164,12 @@
 
       <div class="btns">
         <button class="primary" onclick="window.print()">Print / Screenshot</button>
+        <button class="save" onclick="saveToSheets()">💾 Save to Sheet</button>
       </div>
+      <div id="save_msg"></div>
     </section>
 
-    <!-- Outputs -->
+    <!-- ══════ OUTPUTS ══════ -->
     <section class="card">
       <div class="title-line" id="title_line">POLYCARBONATE ACCORDION — ONE WAY</div>
 
@@ -202,154 +200,356 @@
       <table>
         <thead><tr><th>Material</th><th class="right">Length (mm)</th></tr></thead>
         <tbody>
-          <tr><td>Side frame</td><td class="right mono" id="len_side">—</td></tr>
-          <tr><td>Sliding rod</td><td class="right mono" id="len_slide">—</td></tr>
-          <tr><td>Upper frame</td><td class="right mono" id="len_upper">—</td></tr>
-          <tr><td>Bottom frame</td><td class="right mono" id="len_bottom">—</td></tr>
-          <tr><td>Panel cutting</td><td class="right mono" id="len_panel">—</td></tr>
+          <tr><td>Side frame (WL6320) ×2</td><td class="right mono" id="len_side">—</td></tr>
+          <tr><td>Sliding rod (WL5643) <span id="slide_qty_label">×1</span></td><td class="right mono" id="len_slide">—</td></tr>
+          <tr><td>Upper frame (WL6455) ×1</td><td class="right mono" id="len_upper">—</td></tr>
+          <tr><td>Bottom rail (WL6413) ×1</td><td class="right mono" id="len_bottom">—</td></tr>
+          <tr><td>Panel cutting height</td><td class="right mono" id="len_panel">—</td></tr>
         </tbody>
       </table>
 
       <div class="card" style="margin-top:10px; padding:10px; background:var(--accent-weak)">
-        <div class="small"><b>Note:</b> One Way panel qty is forced even (adds +1 if odd). Two Way follows your sheet (per side = CEILING(total/2)).</div>
+        <div class="small"><b>Note:</b> One Way panel qty is forced even (adds +1 if odd). Two Way follows your sheet (per side = CEILING(total/2), also forced even). All parts quantities &amp; costs are saved to Google Sheet only.</div>
       </div>
     </section>
+
+  </div><!-- end .container -->
+
+  <!-- ══════ HIDDEN DATA STORE (Google Sheets only) ══════ -->
+  <div style="display:none" aria-hidden="true">
+    <span id="h_cut_side"></span><span id="h_cut_slide"></span>
+    <span id="h_cut_upper"></span><span id="h_cut_bottom"></span>
+    <span id="h_cut_panel"></span><span id="h_slide_qty"></span>
+    <span id="h_per_side"></span>
+    <span id="h_m_sf"></span><span id="h_m_sr"></span>
+    <span id="h_m_uf"></span><span id="h_m_br"></span>
+    <span id="h_q_cc"></span><span id="h_q_dj"></span><span id="h_q_bc"></span>
+    <span id="h_q_mw"></span><span id="h_q_uw"></span><span id="h_q_cu"></span>
+    <span id="h_q_cb"></span><span id="h_q_mb"></span><span id="h_q_sc"></span>
+    <span id="h_q_pv"></span>
+    <span id="h_c_sf"></span><span id="h_c_sr"></span>
+    <span id="h_c_uf"></span><span id="h_c_br"></span>
+    <span id="h_c_cc"></span><span id="h_c_dj"></span><span id="h_c_bc"></span>
+    <span id="h_c_mw"></span><span id="h_c_uw"></span><span id="h_c_cu"></span>
+    <span id="h_c_cb"></span><span id="h_c_mb"></span><span id="h_c_sc"></span>
+    <span id="h_c_pv"></span>
+    <span id="h_sub_al"></span><span id="h_sub_hw"></span><span id="h_sub_pv"></span>
+    <span id="h_grand_usd"></span><span id="h_grand_php"></span>
+    <span id="h_selling_php"></span><span id="h_profit_php"></span>
   </div>
 
 <script>
   const $ = id => document.getElementById(id);
 
+  // ── CONFIG ────────────────────────────────────────────────────────────
+  var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxj4sSXbZpQNVknnS_2QCbivcPBubjfb2vza1ERC9sp_-Kwwr2EhiIMUwl3VYODCZjR8Q/exec';
+
+  // ── PRICING (ZS168 Material Order-1222) — NOT shown on screen ─────────
+  var AL_KG_RATE  = 4.30;
+  var AL_KG_PER_M = { WL6320:0.523, WL5643:0.856, WL6455:1.386, WL6413:0.535 };
+
+  // Hardware: cost = pieces_needed × (bag_price ÷ pcs_per_bag)
+  var HW = {
+    connection_cover:  { bag: 5.10,   pcs: 100  },
+    door_corner_joint: { bag: 21.85,  pcs: 50   },
+    bottom_cover:      { bag: 12.70,  pcs: 50   },
+    move_wheels:       { bag: 167.50, pcs: 50   },
+    upper_wheel:       { bag: 105.00, pcs: 450  },
+    clip_upper:        { bag: 39.50,  pcs: 1000 },
+    clip_bottom:       { bag: 25.40,  pcs: 500  },
+    mrod_bottom:       { bag: 32.00,  pcs: 450  },
+    screws:            { bag: 5.50,   pcs: 450  }
+  };
+  function hwCost(item, qty){ return qty * (item.bag / item.pcs); }
+  var PANEL_PER_M = { Transparent:1.00, Frosted:1.05 };
+  var PANEL_STOCK_M = 3.0;
+  var PHP_RATE    = 60;
+
+  function set(id, val){ var el=$(id); if(el) el.textContent=val; }
+
   function updateHeaderAndDirection(){
-    const mode = $('mode').value;
-    const dir = $('direction');
-    const header_title = $('header_title');
-    const title_line = $('title_line');
+    var mode = $('mode').value;
+    var dir  = $('direction');
     if(mode === 'two'){
-      header_title.textContent = 'POLYCARBONATE ACCORDION — TWO WAY';
-      title_line.textContent   = 'POLYCARBONATE ACCORDION — TWO WAY';
+      $('header_title').textContent = 'POLYCARBONATE ACCORDION — TWO WAY';
+      $('title_line').textContent   = 'POLYCARBONATE ACCORDION — TWO WAY';
       dir.value = 'Two Way';
       dir.options[2].disabled = false;
       dir.disabled = true;
-      $('o_dir').textContent = 'Two Way';
+      $('o_dir').textContent    = 'Two Way';
       $('dir_hint').textContent = 'Two Way selected — direction fixed.';
-    }else{
-      header_title.textContent = 'POLYCARBONATE ACCORDION — ONE WAY';
-      title_line.textContent   = 'POLYCARBONATE ACCORDION — ONE WAY';
+    } else {
+      $('header_title').textContent = 'POLYCARBONATE ACCORDION — ONE WAY';
+      $('title_line').textContent   = 'POLYCARBONATE ACCORDION — ONE WAY';
       dir.disabled = false;
       dir.options[2].disabled = true;
-      if(dir.value === 'Two Way'){ dir.value = 'Left to Right'; }
+      if(dir.value === 'Two Way') dir.value = 'Left to Right';
       $('dir_hint').textContent = 'For One Way, choose direction.';
     }
   }
 
   function updatePanelQtyLabels(){
-    const color = $('panel_color').value || 'Transparent';
-    const opening = ($('mode').value === 'two') ? 'double opening' : 'single opening';
-    const title = `${color} Panel Quantity`;
-    $('panel_qty_header').textContent = title;
-    $('panel_qty_label').textContent  = `${title} (${opening})`;
+    var color   = $('panel_color').value || 'Transparent';
+    var opening = ($('mode').value === 'two') ? 'double opening' : 'single opening';
+    $('panel_qty_header').textContent = color + ' Panel Quantity';
+    $('panel_qty_label').textContent  = color + ' Panel Quantity (' + opening + ')';
   }
-
-  function ceil(n){ return Math.ceil(n); }
 
   function compute(){
     updateHeaderAndDirection();
     updatePanelQtyLabels();
 
-    const w = +$('wmm').value || 0;
-    const h = +$('hmm').value || 0;
-    const mode = $('mode').value;
+    var w    = +$('wmm').value || 0;
+    var h    = +$('hmm').value || 0;
+    var mode = $('mode').value;
+    var color= $('panel_color').value;
+    var isTwo= mode === 'two';
 
-    // Formula-168 constants
-    const add_pcs = +$('add_pcs').value || 0;
-    const offset  = (mode === 'two') ? (+$('offset_two').value || 0) : (+$('offset_one').value || 0);
-    const step    = +$('step_mm').value || 1;
+    // Formula-168
+    var add_pcs = +$('add_pcs').value  || 2;
+    var step    = +$('step_mm').value  || 95;
+    var offset  = isTwo ? (+$('offset_two').value||110) : (+$('offset_one').value||70);
 
-    // Auto-calculate panel quantity
-    let qtyTotal = ceil(((w - offset) / step) * add_pcs);
-
-    // Enforce: One Way total must be even
-    if(mode === 'one' && qtyTotal % 2 === 1){
-      qtyTotal += 1;
-    }
-
-    // Per side — Two Way: each side must also be even
-    let perSide = ceil(qtyTotal / 2);
-    if(mode === 'two' && perSide % 2 === 1){
-      perSide += 1; // add 1 to each side to make it even
-      qtyTotal = perSide * 2; // update total accordingly
-    }
+    var qtyTotal = Math.ceil(((w - offset) / step) * add_pcs);
+    if(!isTwo && qtyTotal % 2 === 1) qtyTotal++;
+    var perSide = Math.ceil(qtyTotal / 2);
+    if(isTwo && perSide % 2 === 1){ perSide++; qtyTotal = perSide * 2; }
 
     $('o_qty_total').textContent = qtyTotal;
+    set('h_per_side', perSide);
 
-    const eachBox = $('each_side_box');
-    if(mode === 'two'){
+    var eachBox = $('each_side_box');
+    if(isTwo){
       eachBox.classList.remove('hidden');
       $('o_left').textContent  = perSide;
       $('o_right').textContent = perSide;
-    }else{
+    } else {
       eachBox.classList.add('hidden');
-      $('o_left').textContent  = '—';
-      $('o_right').textContent = '—';
     }
 
-    // Meta
-    $('o_color').textContent = $('panel_color').value;
-    const powder = $('powder').value.trim();
-    $('o_powder').textContent = powder ? `Yes (${powder})` : 'No';
-    (function(o){ if(!o) return; o.className = powder ? 'mono note-badge' : 'mono'; })($('o_powder'));
+    // Meta outputs
+    $('o_color').textContent   = color;
+    var powder = $('powder').value.trim();
+    $('o_powder').textContent  = powder ? 'Yes (' + powder + ')' : 'No';
+    $('o_powder').className    = powder ? 'mono note-badge' : 'mono';
     $('o_purpose').textContent = $('purpose').value;
     $('o_branch').textContent  = $('branch').value;
-    $('o_size').textContent    = `${w} × ${h}`;
+    $('o_size').textContent    = w && h ? w + ' × ' + h : '—';
     $('o_status').textContent  = $('status').value;
     $('o_client').textContent  = $('client').value || '—';
-
-    // Notes live output + highlight
-    const notes = ($('notes') && $('notes').value) ? $('notes').value : '';
-    $('o_notes').textContent = (notes || '').trim() || '—';
-    (function(o){ if(!o) return; o.className = (notes && notes.trim()) ? 'mono note-badge' : 'mono'; })($('o_notes'));
+    var notes = ($('notes').value || '').trim();
+    $('o_notes').textContent   = notes || '—';
+    $('o_notes').className     = notes ? 'mono note-badge' : 'mono';
     $('o_dir').textContent     = $('direction').value;
 
-    // Hidden deduction logic
-    const side_ded = 7, slide_ded = 61, tb_ded = 40, panel_ded = 73;
     if(!w || !h){
-      ['len_side','len_slide','len_upper','len_bottom','len_panel'].forEach(id => $(id).textContent='—');
+      ['len_side','len_slide','len_upper','len_bottom','len_panel']
+        .forEach(function(id){ $(id).textContent='—'; });
       return;
     }
-    $('len_side').textContent  = h - side_ded;
-    $('len_slide').textContent = h - slide_ded;
-    $('len_upper').textContent = w - tb_ded;
-    $('len_bottom').textContent= w - tb_ded;
-    $('len_panel').textContent = h - panel_ded;
+
+    // ── Cuttings ────────────────────────────────────────────────────────
+    var slideQty   = isTwo ? 2 : 1;
+    var cut_side   = h - 7;
+    var cut_slide  = h - 61;
+    var cut_upper  = w - 40;
+    var cut_bottom = w - 40;
+    var cut_panel  = h - 73;
+
+    $('len_side').textContent          = cut_side;
+    $('len_slide').textContent         = cut_slide;
+    $('len_upper').textContent         = cut_upper;
+    $('len_bottom').textContent        = cut_bottom;
+    $('len_panel').textContent         = cut_panel;
+    $('slide_qty_label').textContent   = '×' + slideQty;
+
+    set('h_cut_side',   cut_side);
+    set('h_cut_slide',  cut_slide);
+    set('h_cut_upper',  cut_upper);
+    set('h_cut_bottom', cut_bottom);
+    set('h_cut_panel',  cut_panel);
+    set('h_slide_qty',  slideQty);
+
+    // ── Aluminum meters used ────────────────────────────────────────────
+    var mSF = (cut_side   / 1000) * 2;        // ×2 side frames
+    var mSR = (cut_slide  / 1000) * slideQty; // ×1 or ×2 sliding rods
+    var mUF = (cut_upper  / 1000);
+    var mBR = (cut_bottom / 1000);
+
+    var cSF = mSF * AL_KG_PER_M.WL6320 * AL_KG_RATE;
+    var cSR = mSR * AL_KG_PER_M.WL5643 * AL_KG_RATE;
+    var cUF = mUF * AL_KG_PER_M.WL6455 * AL_KG_RATE;
+    var cBR = mBR * AL_KG_PER_M.WL6413 * AL_KG_RATE;
+    var subAl = cSF + cSR + cUF + cBR;
+
+    // ── Hardware quantities (PIECES) & costs ───────────────────────────
+    var qCC = 2;                              var cCC = hwCost(HW.connection_cover,  qCC);
+    var qDJ = 2;                              var cDJ = hwCost(HW.door_corner_joint, qDJ);
+    var qBC = isTwo ? 2 : 1;                  var cBC = hwCost(HW.bottom_cover,      qBC);
+    var qMW = isTwo ? 2 : 1;                  var cMW = hwCost(HW.move_wheels,       qMW);
+    var qUW = Math.floor(qtyTotal/2) - 1;    var cUW = hwCost(HW.upper_wheel,       qUW);
+    var qCU = qtyTotal;                       var cCU = hwCost(HW.clip_upper,        qCU);
+    var qCB = qtyTotal;                       var cCB = hwCost(HW.clip_bottom,       qCB);
+    var qMB = Math.floor(qtyTotal/2) - 1;    var cMB = hwCost(HW.mrod_bottom,       qMB);
+    var qSC = qUW + qMB;                      var cSC = hwCost(HW.screws,            qSC);
+    var qPV = qtyTotal;  // panels: 1 pc per panel, 3m stock each
+
+    var subHW = cCC+cDJ+cBC+cMW+cUW+cCU+cCB+cMB+cSC;
+
+    var cPV   = qPV * PANEL_STOCK_M * PANEL_PER_M[color];
+    var subPV = cPV;
+
+    var grandUSD   = subAl + subHW + subPV;
+    var grandPHP   = grandUSD * PHP_RATE;
+
+    // Selling price: ₱850/sqft, min 20sqft, +₱3,000 Two Way
+    var sqft       = ((w / 25.4) * (h / 25.4)) / 144;
+    var sellingPHP = Math.round(Math.max(sqft, 20) * 850 + (isTwo ? 3000 : 0));
+    var profitPHP  = sellingPHP - grandPHP;
+
+    // Write all to hidden store
+    set('h_m_sf', mSF.toFixed(3));  set('h_m_sr', mSR.toFixed(3));
+    set('h_m_uf', mUF.toFixed(3));  set('h_m_br', mBR.toFixed(3));
+    set('h_q_cc', qCC); set('h_q_dj', qDJ); set('h_q_bc', qBC);
+    set('h_q_mw', qMW); set('h_q_uw', qUW); set('h_q_cu', qCU);
+    set('h_q_cb', qCB); set('h_q_mb', qMB); set('h_q_sc', qSC);
+    set('h_q_pv', qPV);
+    set('h_c_sf', cSF.toFixed(2));  set('h_c_sr', cSR.toFixed(2));
+    set('h_c_uf', cUF.toFixed(2));  set('h_c_br', cBR.toFixed(2));
+    set('h_c_cc', cCC.toFixed(2));  set('h_c_dj', cDJ.toFixed(2));
+    set('h_c_bc', cBC.toFixed(2));  set('h_c_mw', cMW.toFixed(2));
+    set('h_c_uw', cUW.toFixed(2));  set('h_c_cu', cCU.toFixed(2));
+    set('h_c_cb', cCB.toFixed(2));  set('h_c_mb', cMB.toFixed(2));
+    set('h_c_sc', cSC.toFixed(2));  set('h_c_pv', cPV.toFixed(2));
+    set('h_sub_al',      subAl.toFixed(2));
+    set('h_sub_hw',      subHW.toFixed(2));
+    set('h_sub_pv',      subPV.toFixed(2));
+    set('h_grand_usd',   grandUSD.toFixed(2));
+    set('h_grand_php',   grandPHP.toFixed(2));
+    set('h_selling_php', sellingPHP);
+    set('h_profit_php',  profitPHP.toFixed(2));
   }
 
-  const ids = ['mode','direction','wmm','hmm','panel_color','powder','purpose','branch','client','status','add_pcs','offset_one','offset_two','step_mm','notes'];
-  ids.forEach(id => {
-    const el = $(id);
-    const evt = (el.tagName === 'SELECT') ? 'change' : 'input';
-    el.addEventListener(evt, compute);
+  // ── EVENT LISTENERS ───────────────────────────────────────────────────
+  var watchIds = ['mode','direction','wmm','hmm','panel_color','powder','purpose',
+                  'branch','client','status','add_pcs','offset_one','offset_two','step_mm','notes'];
+  watchIds.forEach(function(id){
+    var el=$(id); if(!el) return;
+    el.addEventListener((el.tagName==='SELECT')?'change':'input', compute);
   });
 
-  function parseExcelNumbers(text){
-    const matches = text.match(/-?\d{1,3}(?:,\d{3})*(?:\.\d+)?/g);
-    if(!matches) return [];
-    return matches.map(s => parseFloat(s.replace(/,/g,''))).filter(n => !Number.isNaN(n));
+  // Excel paste: copy 2 cells (W + H) → paste into either W or H field
+  function parseNums(txt){
+    var m=txt.match(/-?\d{1,6}(?:,\d{3})*(?:\.\d+)?/g);
+    return m ? m.map(function(s){ return parseFloat(s.replace(/,/g,'')); }).filter(function(n){ return !isNaN(n); }) : [];
   }
-  function handlePasteBoth(e){
-    const txt = (e.clipboardData || window.clipboardData).getData('text');
-    if(!txt) return;
-    // Only auto-fill BOTH fields if the pasted text has a tab or newline (2 Excel cells copied)
-    const hasSeparator = txt.includes('\t') || txt.includes('\n');
-    if(!hasSeparator) return; // single value — let it paste normally into current field
-    const nums = parseExcelNumbers(txt);
-    if(nums.length >= 2){
-      e.preventDefault();
-      $('wmm').value = nums[0];
-      $('hmm').value = nums[1];
-      compute();
-    }
+  ['wmm','hmm'].forEach(function(id){
+    $(id).addEventListener('paste', function(e){
+      var txt=(e.clipboardData||window.clipboardData).getData('text');
+      if(!txt||(!txt.includes('\t')&&!txt.includes('\n'))) return;
+      var nums=parseNums(txt);
+      if(nums.length>=2){
+        e.preventDefault();
+        $('wmm').value=nums[0];
+        $('hmm').value=nums[1];
+        compute();
+      }
+    });
+  });
+
+  // ── SAVE TO GOOGLE SHEETS ─────────────────────────────────────────────
+  function g(id){ var el=$(id); return el ? el.textContent : ''; }
+
+  function saveToSheets(){
+    var w = +$('wmm').value || 0, h = +$('hmm').value || 0;
+    if(!w || !h){ alert('Please enter Width and Height first.'); return; }
+
+    var ts   = new Date().toLocaleString('en-PH', {timeZone:'Asia/Manila'});
+    var mode = $('mode').value === 'two' ? 'Two Way' : 'One Way';
+
+    var headers = [
+      'Timestamp','Client','Branch','Mode','Direction','Panel Color','Purpose','Status',
+      'Width (mm)','Height (mm)',
+      // Cuttings
+      'WL6320 Side Frame Cut (mm)','WL5643 Sliding Rod Cut (mm)','Sliding Rod Qty',
+      'WL6455 Upper Frame Cut (mm)','WL6413 Bottom Rail Cut (mm)','Panel Cut Height (mm)',
+      // Panel qty
+      'Panel Qty Total','Panel Qty Per Side',
+      // Aluminum meters
+      'WL6320 m Used','WL5643 m Used','WL6455 m Used','WL6413 m Used',
+      'Connection Cover (pcs)','Door Rail Corner Joint (pcs)',
+      'Bottom Cover Sliding Rod (pcs)','Move Wheels (pcs)',
+      'Upper Wheel M Rod (pcs)','Mesh Clip Upper (pcs)','Mesh Clip Bottom (pcs)',
+      'M-Rod Bottom Movable (pcs)','3.5×10 Screws (pcs)','PVC Panels (pcs)',
+      // Costs USD
+      'WL6320 Cost USD','WL5643 Cost USD','WL6455 Cost USD','WL6413 Cost USD',
+      'Connection Cover Cost USD','Door Corner Joint Cost USD','Bottom Cover Cost USD',
+      'Move Wheels Cost USD','Upper Wheel Cost USD','Mesh Clip Upper Cost USD',
+      'Mesh Clip Bottom Cost USD','M-Rod Bottom Cost USD','Screws Cost USD','Panel Cost USD',
+      // Subtotals & Grand
+      'Aluminum Subtotal USD','Hardware Subtotal USD','Panel Subtotal USD',
+      'Grand Total USD','Grand Total PHP','Selling Price PHP','Profit PHP',
+      // Other
+      'Powdercoat','Notes'
+    ];
+
+    var row = [
+      ts,
+      $('client').value||'—', $('branch').value, mode, $('direction').value,
+      $('panel_color').value, $('purpose').value, $('status').value,
+      w, h,
+      g('h_cut_side'), g('h_cut_slide'), g('h_slide_qty'),
+      g('h_cut_upper'), g('h_cut_bottom'), g('h_cut_panel'),
+      g('o_qty_total'), g('h_per_side'),
+      g('h_m_sf'), g('h_m_sr'), g('h_m_uf'), g('h_m_br'),
+      g('h_q_cc'), g('h_q_dj'), g('h_q_bc'), g('h_q_mw'),
+      g('h_q_uw'), g('h_q_cu'), g('h_q_cb'), g('h_q_mb'), g('h_q_sc'), g('h_q_pv'),
+      g('h_c_sf'), g('h_c_sr'), g('h_c_uf'), g('h_c_br'),
+      g('h_c_cc'), g('h_c_dj'), g('h_c_bc'), g('h_c_mw'),
+      g('h_c_uw'), g('h_c_cu'), g('h_c_cb'), g('h_c_mb'), g('h_c_sc'), g('h_c_pv'),
+      g('h_sub_al'), g('h_sub_hw'), g('h_sub_pv'),
+      g('h_grand_usd'), g('h_grand_php'), g('h_selling_php'), g('h_profit_php'),
+      $('powder').value.trim() || 'No',
+      ($('notes').value||'').trim() || '—'
+    ];
+
+    var deductions = [
+      {key:'PC WL6320 Side Frame',               qty: parseFloat(g('h_m_sf'))  || 0},
+      {key:'PC WL5643 Sliding Rod',              qty: parseFloat(g('h_m_sr'))  || 0},
+      {key:'PC WL6455 Upper Frame',              qty: parseFloat(g('h_m_uf'))  || 0},
+      {key:'PC WL6413 Bottom Rail',              qty: parseFloat(g('h_m_br'))  || 0},
+      {key:'PC Panel '+$('panel_color').value,   qty: parseInt(g('h_q_pv'))    || 0}
+    ].filter(function(x){ return x.qty > 0; });
+
+    // Disable buttons while saving
+    var saveBtns = document.querySelectorAll('button.save');
+    var msg      = $('save_msg');
+    saveBtns.forEach(function(b){ b.disabled=true; b.textContent='⏳ Saving…'; });
+    if(msg) msg.textContent = '';
+
+    fetch(SHEETS_URL, {
+      method: 'POST',
+      mode:   'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:      'append_row_v2',
+        tab:         'Polycarbonate',
+        headers:     headers,
+        priceRow:    [],
+        row:         row,
+        deductions:  deductions,
+        productLine: 'Polycarbonate'
+      })
+    }).then(function(){
+      saveBtns.forEach(function(b){ b.disabled=false; b.textContent='✅ Saved!';
+        setTimeout(function(){ b.textContent='💾 Save to Sheet'; }, 3000);
+      });
+      if(msg){ msg.style.color='green'; msg.textContent='✅ Saved to Google Sheet successfully.'; }
+    }).catch(function(){
+      saveBtns.forEach(function(b){ b.disabled=false; b.textContent='💾 Save to Sheet'; });
+      if(msg){ msg.style.color='red'; msg.textContent='❌ Save failed. Check connection.'; }
+    });
   }
-  ['wmm','hmm'].forEach(id => $(id).addEventListener('paste', handlePasteBoth));
 
   window.addEventListener('DOMContentLoaded', compute);
 </script>

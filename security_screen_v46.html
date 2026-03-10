@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Security Screen Calculator — One Way & Two Way</title>
 <style>
-:root{--bg:#061a14;--panel:#082820;--ink:#d1faf0;--muted:#5fc9a8;--border:#0e4a35;--accent:#00e5b0;--accent2:#00b8d9;--one-way:#00e5b0;--two-way:#00b8d9}
+:root{--bg:#061a14;--panel:#082820;--ink:#d1faf0;--muted:#5fc9a8;--border:#0e4a35;--accent:#00e5b0;--accent2:#00b8d9;--one-way:#00e5b0;--two-way:#00b8d9;--poly:#f97316;--poly2:#fb923c}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);position:relative;overflow-x:hidden}
 
@@ -48,7 +48,7 @@ th{color:var(--muted);background:rgba(0,20,14,.5);font-weight:600}
 .mode-switch button{border:none;border-radius:0;padding:8px 20px;background:transparent;color:var(--muted);font-size:13px;transition:all .2s}
 .mode-switch button#btn_oneway.active{background:linear-gradient(135deg,#00e5b0,#00c896);color:#021a10;font-weight:700;box-shadow:0 0 16px rgba(0,229,176,.4)}
 .mode-switch button#btn_twoway.active{background:linear-gradient(135deg,#00b8d9,#0091b5);color:#021a10;font-weight:700;box-shadow:0 0 16px rgba(0,184,217,.4)}
-.info-box{background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.3);border-radius:10px;padding:10px 14px;margin:10px 0;font-size:12px;color:#a7f3d0}
+.mode-switch button#btn_poly.active{background:linear-gradient(135deg,#f97316,#fb923c);color:#1a0400;font-weight:700;box-shadow:0 0 16px rgba(249,115,22,.4)}.info-box{background:rgba(0,229,176,.07);border:1px solid rgba(0,229,176,.3);border-radius:10px;padding:10px 14px;margin:10px 0;font-size:12px;color:#a7f3d0}
 .info-box strong{color:var(--accent)}
 </style>
 </head>
@@ -127,6 +127,7 @@ th{color:var(--muted);background:rgba(0,20,14,.5);font-weight:600}
   <div class="mode-switch no-print">
     <button id="btn_oneway" class="active" onclick="switchMode('oneway')">One Way</button>
     <button id="btn_twoway" onclick="switchMode('twoway')">Two Way</button>
+    <button id="btn_poly" onclick="switchMode('poly')" style="border-left:1px solid rgba(255,165,0,.3)">🪟 Polycarbonate</button>
   </div>
   <button class="primary no-print" onclick="window.print()">🖨 Print</button>
 </header>
@@ -359,7 +360,10 @@ th{color:var(--muted);background:rgba(0,20,14,.5);font-weight:600}
       </table>
     </div>
   </section>
-</div>
+
+<!-- ══════════════════════════════════════════════════
+     POLYCARBONATE ACCORDION SECTIONS (hidden by default, inside .wrap grid)
+     ══════════════════════════════════════════════════ -->
 
 <script>
 var currentMode = 'oneway';
@@ -648,10 +652,28 @@ function onMeshOverride(){
 
 function switchMode(mode){
   currentMode = mode;
-  document.getElementById('mode').value = mode;
+
+  // Toggle poly tab vs security screen tabs
+  var isPoly = mode === 'poly';
   document.getElementById('btn_oneway').classList.toggle('active', mode==='oneway');
   document.getElementById('btn_twoway').classList.toggle('active', mode==='twoway');
-  
+  document.getElementById('btn_poly').classList.toggle('active', isPoly);
+
+  // Show/hide entire left+right panels
+  var secInputs  = document.querySelector('.wrap > section.card:first-of-type');
+  var secOutputs = document.querySelector('.wrap > section.card:nth-of-type(2)');
+  if(secInputs)  secInputs.style.display  = isPoly ? 'none' : '';
+  if(secOutputs) secOutputs.style.display = isPoly ? 'none' : '';
+  document.getElementById('poly_inputs').style.display  = isPoly ? '' : 'none';
+  document.getElementById('poly_outputs').style.display = isPoly ? '' : 'none';
+
+  if(isPoly){
+    computePoly();
+    return;
+  }
+
+  // Security screen mode
+  document.getElementById('mode').value = mode;
   document.getElementById('title_header').textContent = mode==='oneway' ? 'ONE WAY SECURITY SCREEN' : 'TWO WAY SECURITY SCREEN';
   document.getElementById('mesh_plan_title').textContent = mode==='oneway' ? 'Mesh Plan — One Way' : 'Mesh Plan — Two Way';
   
@@ -927,7 +949,7 @@ function computeTwoWay(w, h){
 // GOOGLE SHEETS INTEGRATION
 // =============================================
 // STEP 1: Paste your Google Apps Script Web App URL below
-var SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
+var SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxj4sSXbZpQNVknnS_2QCbivcPBubjfb2vza1ERC9sp_-Kwwr2EhiIMUwl3VYODCZjR8Q/exec';
 
 function saveToSheets(){
   if(SHEETS_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
@@ -1121,6 +1143,504 @@ document.addEventListener('DOMContentLoaded', function(){
   switchMode('oneway');
   compute();
 });
+</script>
+
+
+<!-- POLY LEFT: Inputs -->
+<section class="card" id="poly_inputs" style="display:none">
+  <h2 style="color:var(--poly)">Polycarbonate Inputs</h2>
+
+  <div class="row">
+    <label>Sub-Mode</label>
+    <select id="poly_mode" onchange="computePoly()">
+      <option value="one">One Way</option>
+      <option value="two">Two Way</option>
+    </select>
+  </div>
+
+  <div class="row" id="poly_dir_row">
+    <label>Direction</label>
+    <select id="poly_direction" onchange="computePoly()">
+      <option>Left to Right</option>
+      <option>Right to Left</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label>Width (mm)</label>
+    <input id="poly_w" type="number" min="1" step="1" value="2350" oninput="computePoly()">
+  </div>
+
+  <div class="row">
+    <label>Height (mm)</label>
+    <input id="poly_h" type="number" min="1" step="1" value="2310" oninput="computePoly()">
+  </div>
+
+  <div class="row">
+    <label>Panel Color</label>
+    <select id="poly_color" onchange="computePoly()">
+      <option value="Transparent">Transparent</option>
+      <option value="Frosted">Frosted</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label>Purpose</label>
+    <select id="poly_purpose" onchange="computePoly()">
+      <option>For CR</option>
+      <option>For Inside Divider</option>
+      <option>For Outdoor</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label>Client</label>
+    <input id="poly_client" placeholder="Client name" oninput="computePoly()">
+  </div>
+
+  <div class="row">
+    <label>Branch</label>
+    <select id="poly_branch" onchange="computePoly()">
+      <option>Batangas Client</option>
+      <option>Pampanga Client</option>
+      <option>Shipping Thru AP Cargo</option>
+      <option>Shipping Thru Victory Drop &amp; Go</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label>Powdercoat Code</label>
+    <input id="poly_powder" placeholder="e.g., PWD12345" oninput="computePoly()">
+  </div>
+
+  <div class="row">
+    <label>Status</label>
+    <select id="poly_status" onchange="computePoly()">
+      <option>New</option>
+      <option>Repair</option>
+      <option>Warranty</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label>Notes</label>
+    <textarea id="poly_notes" rows="2" placeholder="Optional notes…" oninput="computePoly()"></textarea>
+  </div>
+
+  <div class="info-box" style="border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.07);color:#fed7aa;margin-top:8px">
+    <strong style="color:var(--poly)">Formula-168 Constants</strong><br>
+    Step: 95mm | Add pcs: 2 | Offset 1-way: 70mm | Offset 2-way: 110mm
+  </div>
+
+  <div class="btns no-print" style="margin-top:10px">
+    <button class="primary" onclick="window.print()">Print</button>
+    <button id="poly_save_btn" class="primary" onclick="savePolyToSheets()" style="background:linear-gradient(135deg,#f97316,#fb923c);color:#1a0400;border-color:#f97316;">💾 Save to Sheet</button>
+  </div>
+  <div id="poly_save_status" style="font-size:12px;margin-top:6px;display:none;"></div>
+</section>
+
+<!-- POLY RIGHT: Outputs -->
+<section class="card" id="poly_outputs" style="display:none">
+  <div class="title-line" id="poly_title" style="color:var(--poly)">POLYCARBONATE ACCORDION — ONE WAY</div>
+
+  <div class="meta-grid">
+    <div class="meta-block">
+      <div class="row-line"><span>Client:</span><span id="po_client" class="mono">—</span></div>
+      <div class="row-line"><span>Branch:</span><span id="po_branch" class="mono">—</span></div>
+      <div class="row-line"><span>Direction:</span><span id="po_dir" class="mono">—</span></div>
+      <div class="row-line"><span>Purpose:</span><span id="po_purpose" class="mono">—</span></div>
+    </div>
+    <div class="meta-block">
+      <div class="row-line"><span>Size (W×H):</span><span id="po_size" class="mono">—</span></div>
+      <div class="row-line"><span>Panel Color:</span><span id="po_color" class="mono">—</span></div>
+      <div class="row-line"><span>Powdercoat:</span><span id="po_powder" class="mono">No</span></div>
+      <div class="row-line"><span>Status:</span><span id="po_status" class="mono">—</span></div>
+      <div class="row-line"><span>Notes:</span><span id="po_notes" class="mono">—</span></div>
+    </div>
+  </div>
+
+  <!-- Panel Quantity -->
+  <div class="section">
+    <h2 style="color:var(--poly)" id="po_qty_header">Transparent Panel Quantity</h2>
+    <table>
+      <thead><tr><th>Description</th><th class="right">Qty (pcs)</th></tr></thead>
+      <tbody>
+        <tr id="po_total_row"><td id="po_qty_label">Panel Qty (single opening)</td><td class="right mono" id="po_qty_total" style="color:var(--poly);font-weight:700;font-size:15px">—</td></tr>
+        <tr id="po_sides_row" style="display:none"><td>Left side</td><td class="right mono" id="po_left">—</td></tr>
+        <tr id="po_sides_row2" style="display:none"><td>Right side</td><td class="right mono" id="po_right">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Cuttings -->
+  <div class="section">
+    <h2>Aluminum Cuttings (mm)</h2>
+    <table>
+      <thead><tr><th>Material</th><th class="right">Qty</th><th class="right">Cut Length (mm)</th></tr></thead>
+      <tbody>
+        <tr><td>WL6320 — Side frame</td><td class="right mono" id="po_sf_qty">×2</td><td class="right mono" id="po_len_side">—</td></tr>
+        <tr><td>WL5643 — Sliding rod</td><td class="right mono" id="po_sr_qty">×1</td><td class="right mono" id="po_len_slide">—</td></tr>
+        <tr><td>WL6455 — Upper frame</td><td class="right mono">×1</td><td class="right mono" id="po_len_upper">—</td></tr>
+        <tr><td>WL6413 — Bottom rail</td><td class="right mono">×1</td><td class="right mono" id="po_len_bottom">—</td></tr>
+        <tr><td>Panel cutting height</td><td class="right mono">—</td><td class="right mono" id="po_len_panel">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Parts List -->
+  <div class="section">
+    <h2>Parts &amp; Quantities</h2>
+    <table>
+      <thead><tr><th>Part</th><th class="right">Qty</th><th class="right">Unit Price</th><th class="right">Cost (USD)</th></tr></thead>
+      <tbody>
+        <tr><td>WL6320 Side frame (Al)</td><td class="right mono" id="po_q_sf">—</td><td class="right mono">$4.30/kg</td><td class="right mono" id="po_c_sf">—</td></tr>
+        <tr><td>WL5643 Sliding rod (Al)</td><td class="right mono" id="po_q_sr">—</td><td class="right mono">$4.30/kg</td><td class="right mono" id="po_c_sr">—</td></tr>
+        <tr><td>WL6455 Upper frame (Al)</td><td class="right mono" id="po_q_uf">—</td><td class="right mono">$4.30/kg</td><td class="right mono" id="po_c_uf">—</td></tr>
+        <tr><td>WL6413 Bottom rail (Al)</td><td class="right mono" id="po_q_br">—</td><td class="right mono">$4.30/kg</td><td class="right mono" id="po_c_br">—</td></tr>
+        <tr><td>Connection cover</td><td class="right mono" id="po_q_cc">1 bag</td><td class="right mono">$5.10</td><td class="right mono" id="po_c_cc">—</td></tr>
+        <tr><td>Door rail corner joint</td><td class="right mono" id="po_q_dj">2 bags</td><td class="right mono">$21.85</td><td class="right mono" id="po_c_dj">—</td></tr>
+        <tr><td>Bottom cover of sliding rod</td><td class="right mono" id="po_q_bc">—</td><td class="right mono">$12.70</td><td class="right mono" id="po_c_bc">—</td></tr>
+        <tr><td>Move wheels (stainless)</td><td class="right mono" id="po_q_mw">—</td><td class="right mono">$167.50</td><td class="right mono" id="po_c_mw">—</td></tr>
+        <tr><td>Upper wheel of M rod</td><td class="right mono" id="po_q_uw">—</td><td class="right mono">$105.00</td><td class="right mono" id="po_c_uw">—</td></tr>
+        <tr><td>Mesh clip (upper)</td><td class="right mono" id="po_q_cu">—</td><td class="right mono">$39.50</td><td class="right mono" id="po_c_cu">—</td></tr>
+        <tr><td>Mesh clip (bottom)</td><td class="right mono" id="po_q_cb">—</td><td class="right mono">$25.40</td><td class="right mono" id="po_c_cb">—</td></tr>
+        <tr><td>M-rod bottom movable acc.</td><td class="right mono" id="po_q_mb">—</td><td class="right mono">$32.00</td><td class="right mono" id="po_c_mb">—</td></tr>
+        <tr><td>3.5×10 screws</td><td class="right mono" id="po_q_sc">—</td><td class="right mono">$5.50</td><td class="right mono" id="po_c_sc">—</td></tr>
+        <tr><td id="po_panel_label">Transparent PVC board</td><td class="right mono" id="po_q_pv">—</td><td class="right mono" id="po_panel_price">$1.00/m</td><td class="right mono" id="po_c_pv">—</td></tr>
+        <tr style="background:rgba(249,115,22,.1);border-top:2px solid rgba(249,115,22,.3)">
+          <td><strong style="color:var(--poly)">TOTAL COST</strong></td>
+          <td colspan="2"></td>
+          <td class="right mono" style="color:var(--poly);font-weight:700" id="po_total_usd">—</td>
+        </tr>
+        <tr>
+          <td>Cost (PHP @ ₱60)</td><td colspan="2"></td>
+          <td class="right mono" id="po_total_php">—</td>
+        </tr>
+        <tr>
+          <td>Selling Price PHP</td><td colspan="2"></td>
+          <td class="right mono" id="po_selling">—</td>
+        </tr>
+        <tr>
+          <td>Profit PHP</td><td colspan="2"></td>
+          <td class="right mono" id="po_profit">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</div><!-- end .wrap -->
+<script>
+// ══════════════════════════════════════════════
+// POLYCARBONATE CALCULATOR
+// ══════════════════════════════════════════════
+
+// Cutting formulas (from accordion_polycarbonate.html)
+// side:   h - 7
+// slide:  h - 61
+// upper:  w - 40
+// bottom: w - 40
+// panel:  h - 73
+
+// Formula-168 constants
+var POLY_STEP     = 95;
+var POLY_ADD      = 2;
+var POLY_OFF_ONE  = 70;
+var POLY_OFF_TWO  = 110;
+
+// Aluminum specs: weight (kg/m) × $4.30/kg
+var POLY_AL = {
+  WL6320: { kgm: 0.523, mpc: 4.8, qty_per_door: 2 },   // side frame ×2
+  WL5643: { kgm: 0.856, mpc: 4.7, qty_per_door: 1 },   // sliding rod ×1 (oneway) or ×2 (twoway)
+  WL6455: { kgm: 1.386, mpc: 6.0, qty_per_door: 1 },   // upper frame ×1
+  WL6413: { kgm: 0.535, mpc: 6.0, qty_per_door: 1 }    // bottom rail ×1
+};
+
+var POLY_PARTS = {
+  connection_cover:  { price: 5.10  },  // always 1 bag
+  door_corner_joint: { price: 21.85 },  // always 2 bags
+  bottom_cover:      { price: 12.70 },  // 1 oneway, 2 twoway
+  move_wheels:       { price: 167.50 }, // 1 oneway, 2 twoway
+  upper_wheel:       { price: 105.00 }, // panels/2 - 1
+  clip_upper:        { price: 39.50  }, // = panels used
+  clip_bottom:       { price: 25.40  }, // = panels used
+  mrod_bottom:       { price: 32.00  }, // panels/2 - 1
+  screws:            { price: 5.50   }, // upper_wheel + mrod_bottom
+  panel_trans:       { price: 1.00   }, // per meter (3m/pc)
+  panel_frost:       { price: 1.05   }  // per meter (3m/pc)
+};
+
+function computePoly(){
+  var w    = +document.getElementById('poly_w').value || 0;
+  var h    = +document.getElementById('poly_h').value || 0;
+  var mode = document.getElementById('poly_mode').value;
+  var color = document.getElementById('poly_color').value;
+  var dir  = mode === 'two' ? 'Two Way' : document.getElementById('poly_direction').value;
+
+  // Direction row toggle
+  document.getElementById('poly_dir_row').style.display = mode === 'two' ? 'none' : '';
+
+  // Title
+  var titleStr = 'POLYCARBONATE ACCORDION — ' + (mode === 'two' ? 'TWO WAY' : 'ONE WAY');
+  document.getElementById('poly_title').textContent = titleStr;
+
+  // Meta outputs
+  var client  = document.getElementById('poly_client').value.trim() || '—';
+  var branch  = document.getElementById('poly_branch').value;
+  var powder  = document.getElementById('poly_powder').value.trim();
+  var purpose = document.getElementById('poly_purpose').value;
+  var status  = document.getElementById('poly_status').value;
+  var notes   = document.getElementById('poly_notes').value.trim();
+
+  document.getElementById('po_client').textContent  = client;
+  document.getElementById('po_branch').textContent  = branch;
+  document.getElementById('po_dir').textContent     = dir;
+  document.getElementById('po_purpose').textContent = purpose;
+  document.getElementById('po_size').textContent    = w && h ? w + ' × ' + h : '—';
+  document.getElementById('po_color').textContent   = color;
+  document.getElementById('po_status').textContent  = status;
+
+  var powderEl = document.getElementById('po_powder');
+  powderEl.textContent = powder ? 'Yes (' + powder + ')' : 'No';
+  powderEl.className   = powder ? 'mono pc-badge' : 'mono';
+
+  var notesEl = document.getElementById('po_notes');
+  notesEl.textContent = notes || '—';
+  notesEl.className   = notes ? 'mono note-badge' : 'mono';
+
+  // Panel qty header
+  var colorLabel = color === 'Frosted' ? 'Frosted' : 'Transparent';
+  document.getElementById('po_qty_header').textContent = colorLabel + ' Panel Quantity';
+  document.getElementById('po_panel_label').textContent = colorLabel + ' PVC board';
+  document.getElementById('po_panel_price').textContent = color === 'Frosted' ? '$1.05/m' : '$1.00/m';
+
+  if(!w || !h){
+    ['po_len_side','po_len_slide','po_len_upper','po_len_bottom','po_len_panel',
+     'po_qty_total','po_left','po_right'].forEach(function(id){
+      document.getElementById(id).textContent = '—';
+    });
+    return;
+  }
+
+  // ── CUTTINGS ──────────────────────────────────────
+  var cut_side   = h - 7;
+  var cut_slide  = h - 61;
+  var cut_upper  = w - 40;
+  var cut_bottom = w - 40;
+  var cut_panel  = h - 73;
+
+  document.getElementById('po_len_side').textContent   = cut_side;
+  document.getElementById('po_len_slide').textContent  = cut_slide;
+  document.getElementById('po_len_upper').textContent  = cut_upper;
+  document.getElementById('po_len_bottom').textContent = cut_bottom;
+  document.getElementById('po_len_panel').textContent  = cut_panel;
+
+  // ── PANEL QUANTITY (Formula-168) ───────────────────
+  var offset = mode === 'two' ? POLY_OFF_TWO : POLY_OFF_ONE;
+  var qtyRaw = Math.ceil(((w - offset) / POLY_STEP) * POLY_ADD);
+
+  // One-way: must be even
+  if(mode === 'one' && qtyRaw % 2 === 1) qtyRaw++;
+
+  var perSide = Math.ceil(qtyRaw / 2);
+  if(mode === 'two' && perSide % 2 === 1){ perSide++; qtyRaw = perSide * 2; }
+
+  document.getElementById('po_qty_total').textContent = qtyRaw;
+  document.getElementById('po_qty_label').textContent = colorLabel + ' Panel Qty (' + (mode === 'two' ? 'double opening' : 'single opening') + ')';
+
+  var sidesRow  = document.getElementById('po_sides_row');
+  var sidesRow2 = document.getElementById('po_sides_row2');
+  if(mode === 'two'){
+    sidesRow.style.display  = '';
+    sidesRow2.style.display = '';
+    document.getElementById('po_left').textContent  = perSide;
+    document.getElementById('po_right').textContent = perSide;
+  } else {
+    sidesRow.style.display  = 'none';
+    sidesRow2.style.display = 'none';
+  }
+
+  // Sliding rod & bottom cover qty (twoway = 2, oneway = 1)
+  var isTwo = mode === 'two';
+  var srQty = isTwo ? 2 : 1;
+  document.getElementById('po_sf_qty').textContent = '×2';
+  document.getElementById('po_sr_qty').textContent = '×' + srQty;
+
+  // ── ALUMINUM COSTS ─────────────────────────────────
+  var pricePerKg = 4.30;
+  var cutSideM   = cut_side  / 1000;
+  var cutSlideM  = cut_slide / 1000;
+  var cutUpperM  = cut_upper / 1000;
+  var cutBottomM = cut_bottom / 1000;
+
+  var cSF = 2  * cutSideM  * POLY_AL.WL6320.kgm * pricePerKg;
+  var cSR = srQty * cutSlideM * POLY_AL.WL5643.kgm * pricePerKg;
+  var cUF = 1  * cutUpperM * POLY_AL.WL6455.kgm * pricePerKg;
+  var cBR = 1  * cutBottomM* POLY_AL.WL6413.kgm * pricePerKg;
+
+  // Cut lengths in meters for qty display
+  document.getElementById('po_q_sf').textContent = '2 × ' + cutSideM.toFixed(3) + 'm';
+  document.getElementById('po_q_sr').textContent = srQty + ' × ' + cutSlideM.toFixed(3) + 'm';
+  document.getElementById('po_q_uf').textContent = '1 × ' + cutUpperM.toFixed(3) + 'm';
+  document.getElementById('po_q_br').textContent = '1 × ' + cutBottomM.toFixed(3) + 'm';
+  document.getElementById('po_c_sf').textContent = '$' + cSF.toFixed(2);
+  document.getElementById('po_c_sr').textContent = '$' + cSR.toFixed(2);
+  document.getElementById('po_c_uf').textContent = '$' + cUF.toFixed(2);
+  document.getElementById('po_c_br').textContent = '$' + cBR.toFixed(2);
+
+  // ── HARDWARE QUANTITIES ────────────────────────────
+  var panels = qtyRaw;
+  var qCC  = 1;
+  var qDJ  = 2;
+  var qBC  = isTwo ? 2 : 1;
+  var qMW  = isTwo ? 2 : 1;
+  var qUW  = Math.floor(panels / 2) - 1;   // panels/2 - 1
+  var qCU  = panels;                         // = panels
+  var qCB  = panels;                         // = panels
+  var qMB  = Math.floor(panels / 2) - 1;   // panels/2 - 1
+  var qSC  = qUW + qMB;                     // upper_wheel + mrod_bottom
+
+  document.getElementById('po_q_cc').textContent = qCC + ' bag';
+  document.getElementById('po_q_dj').textContent = qDJ + ' bags';
+  document.getElementById('po_q_bc').textContent = qBC + (qBC === 1 ? ' bag' : ' bags');
+  document.getElementById('po_q_mw').textContent = qMW + (qMW === 1 ? ' bag' : ' bags');
+  document.getElementById('po_q_uw').textContent = qUW + ' bags';
+  document.getElementById('po_q_cu').textContent = qCU + ' bags';
+  document.getElementById('po_q_cb').textContent = qCB + ' bags';
+  document.getElementById('po_q_mb').textContent = qMB + ' bags';
+  document.getElementById('po_q_sc').textContent = qSC + ' bags';
+
+  // ── HARDWARE COSTS ─────────────────────────────────
+  var cCC = qCC * POLY_PARTS.connection_cover.price;
+  var cDJ = qDJ * POLY_PARTS.door_corner_joint.price;
+  var cBC = qBC * POLY_PARTS.bottom_cover.price;
+  var cMW = qMW * POLY_PARTS.move_wheels.price;
+  var cUW = qUW * POLY_PARTS.upper_wheel.price;
+  var cCU = qCU * POLY_PARTS.clip_upper.price;
+  var cCB = qCB * POLY_PARTS.clip_bottom.price;
+  var cMB = qMB * POLY_PARTS.mrod_bottom.price;
+  var cSC = qSC * POLY_PARTS.screws.price;
+
+  document.getElementById('po_c_cc').textContent = '$' + cCC.toFixed(2);
+  document.getElementById('po_c_dj').textContent = '$' + cDJ.toFixed(2);
+  document.getElementById('po_c_bc').textContent = '$' + cBC.toFixed(2);
+  document.getElementById('po_c_mw').textContent = '$' + cMW.toFixed(2);
+  document.getElementById('po_c_uw').textContent = '$' + cUW.toFixed(2);
+  document.getElementById('po_c_cu').textContent = '$' + cCU.toFixed(2);
+  document.getElementById('po_c_cb').textContent = '$' + cCB.toFixed(2);
+  document.getElementById('po_c_mb').textContent = '$' + cMB.toFixed(2);
+  document.getElementById('po_c_sc').textContent = '$' + cSC.toFixed(2);
+
+  // ── PANEL COST ─────────────────────────────────────
+  // Each panel is 3m long, price per meter
+  var panelPricePerM = color === 'Frosted' ? 1.05 : 1.00;
+  var panelStockM    = 3.0;  // 3m/piece stock
+  var cPV = panels * panelStockM * panelPricePerM;
+  document.getElementById('po_q_pv').textContent = panels + ' pcs × 3m';
+  document.getElementById('po_c_pv').textContent = '$' + cPV.toFixed(2);
+
+  // ── GRAND TOTAL ─────────────────────────────────────
+  var grandUSD = cSF + cSR + cUF + cBR + cCC + cDJ + cBC + cMW + cUW + cCU + cCB + cMB + cSC + cPV;
+  var phpRate  = 60;
+  var grandPHP = grandUSD * phpRate;
+
+  // Selling price: same formula as security screen (₱850/sqft, min 20sqft, +₱3000 if twoway)
+  var wIn = w / 25.4, hIn = h / 25.4;
+  var sqft = (wIn * hIn) / 144;
+  var usedSqft = Math.max(sqft, 20);
+  var sellingPHP = Math.round(usedSqft * 850 + (isTwo ? 3000 : 0));
+  var profitPHP  = sellingPHP - grandPHP;
+
+  document.getElementById('po_total_usd').textContent = '$' + grandUSD.toFixed(2);
+  document.getElementById('po_total_php').textContent = '₱' + grandPHP.toFixed(2);
+  document.getElementById('po_selling').textContent   = '₱' + sellingPHP.toLocaleString();
+  document.getElementById('po_profit').textContent    = '₱' + profitPHP.toFixed(2);
+
+  // Store for save
+  window._polyLast = {
+    w, h, mode, dir, color, client, branch, powder, purpose, status, notes,
+    qtyRaw, perSide, srQty,
+    cut_side, cut_slide, cut_upper, cut_bottom, cut_panel,
+    qCC, qDJ, qBC, qMW, qUW, qCU, qCB, qMB, qSC, panels,
+    cSF, cSR, cUF, cBR, cCC, cDJ, cBC, cMW, cUW, cCU, cCB, cMB, cSC, cPV,
+    grandUSD, grandPHP, sellingPHP, profitPHP, phpRate,
+    panelPricePerM
+  };
+}
+
+function savePolyToSheets(){
+  var d = window._polyLast;
+  if(!d){ alert('Please compute first.'); return; }
+
+  var ts = new Date().toLocaleString('en-PH', {timeZone:'Asia/Manila'});
+  var modeStr = d.mode === 'two' ? 'Two Way' : 'One Way';
+
+  var headers = [
+    'Timestamp','Client','Branch','Mode','Direction','Panel Color','Purpose','Status',
+    'Width (mm)','Height (mm)',
+    'Side Frame Cut (mm) ×2','Sliding Rod Cut (mm)','Sliding Rod Qty',
+    'Upper Frame Cut (mm)','Bottom Rail Cut (mm)','Panel Cut Height (mm)',
+    'Panel Qty Total','Panel Qty Per Side',
+    'Connection Cover (bags)','Door Rail Corner Joint (bags)',
+    'Bottom Cover Sliding Rod (bags)','Move Wheels (bags)',
+    'Upper Wheel M Rod (bags)','Mesh Clip Upper (bags)','Mesh Clip Bottom (bags)',
+    'M-rod Bottom Movable (bags)','3.5×10 Screws (bags)',
+    'Panel Cost USD','Al Side Frame USD','Al Sliding Rod USD','Al Upper Frame USD','Al Bottom Rail USD',
+    'Hardware Total USD','Grand Total USD','PHP Rate','Grand Total PHP',
+    'Selling Price PHP','Profit PHP','Powdercoat','Notes'
+  ];
+
+  var row = [
+    ts, d.client, d.branch, modeStr, d.dir, d.color, d.purpose, d.status,
+    d.w, d.h,
+    d.cut_side, d.cut_slide, d.srQty,
+    d.cut_upper, d.cut_bottom, d.cut_panel,
+    d.qtyRaw, d.perSide,
+    d.qCC, d.qDJ, d.qBC, d.qMW, d.qUW, d.qCU, d.qCB, d.qMB, d.qSC,
+    d.cPV.toFixed(2), d.cSF.toFixed(2), d.cSR.toFixed(2), d.cUF.toFixed(2), d.cBR.toFixed(2),
+    (d.cCC+d.cDJ+d.cBC+d.cMW+d.cUW+d.cCU+d.cCB+d.cMB+d.cSC).toFixed(2),
+    d.grandUSD.toFixed(2), d.phpRate, d.grandPHP.toFixed(2),
+    d.sellingPHP, d.profitPHP.toFixed(2),
+    d.powder || 'No', d.notes || '—'
+  ];
+
+  var deductions = [
+    {key:'PC WL6320 Side Frame',  qty: 2 * d.cut_side/1000 },
+    {key:'PC WL5643 Sliding Rod', qty: d.srQty * d.cut_slide/1000 },
+    {key:'PC WL6455 Upper Frame', qty: d.cut_upper/1000 },
+    {key:'PC WL6413 Bottom Rail', qty: d.cut_bottom/1000 },
+    {key:'PC Panel ' + d.color,   qty: d.panels }
+  ].filter(function(x){ return x.qty > 0; });
+
+  var btn = document.getElementById('poly_save_btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving…';
+
+  fetch(SHEETS_SCRIPT_URL, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      action:'append_row_v2',
+      tab:'Polycarbonate',
+      headers:headers,
+      priceRow:[],
+      row:row,
+      deductions:deductions,
+      productLine:'Polycarbonate'
+    })
+  }).then(function(){
+    btn.disabled = false;
+    btn.textContent = '✅ Saved!';
+    setTimeout(function(){ btn.textContent = '💾 Save to Sheet'; }, 3000);
+  }).catch(function(){
+    btn.disabled = false;
+    btn.textContent = '💾 Save to Sheet';
+    var st = document.getElementById('poly_save_status');
+    st.style.display  = 'block';
+    st.style.color    = '#f87171';
+    st.textContent    = '❌ Save failed. Check internet connection.';
+  });
+}
 </script>
 
 </body>
