@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Honeycomb Combo Calculator — V4 (Live)</title>
+  <title>Honeycomb / Pleated Calculator — v5</title>
   <style>
-    body { font-family: Arial, sans-serif; background-color: lavender; margin: 20px; }
+    body { font-family: Arial, sans-serif; background-color: #f3f0ff; margin: 20px; }
     .container { max-width: 1100px; margin: auto; display: grid; grid-template-columns: 380px 1fr; gap: 14px; }
     .card { background: #ffffff; border: 1px solid #d2cce0; border-radius: 12px; padding: 14px; }
     h1 { text-align: center; margin: 0 0 8px; }
     h2 { margin: 0 0 10px; font-size: 15px; }
     label { display: block; margin-top: 10px; font-size: 12px; color:#6b6575; }
-    select, input, textarea { width: 100%; padding: 8px 10px; margin-top: 6px; border-radius: 10px; border: 1px solid #d2cce0; }
+    select, input, textarea { width: 100%; padding: 8px 10px; margin-top: 6px; border-radius: 10px; border: 1px solid #d2cce0; font-family: inherit; font-size: 13px; }
     .row { margin-bottom: 8px; }
     .btns { display:flex; gap:8px; margin-top:10px }
-    button { padding:10px 12px; border-radius:10px; border:1px solid #d2cce0; background:white; cursor:pointer }
+    button { padding:10px 12px; border-radius:10px; border:1px solid #d2cce0; background:white; cursor:pointer; font-family:inherit; }
     button.primary { background:#a855f7; color:white; border-color:#a855f7; font-weight:700 }
     table { width:100%; border-collapse: collapse; font-size:13px; background:#fff }
     th, td { border-bottom:1px solid #e6e0f2; padding:6px; text-align:left }
@@ -25,16 +25,52 @@
     .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .hidden { display:none !important; }
     .pill { display:inline-block; padding:2px 8px; border:1px solid #d2cce0; border-radius:9999px; background:#ede7f6; font-size:12px; color:#6b6575 }
-  
-  /* Powdercoat highlight */
-  .pc-on{background:#fff7a3!important;border-color:#fde047!important;box-shadow:0 0 0 2px rgba(253,224,71,.35) inset}
-  .pc-badge{display:inline-block;background:#fff7a3;border:1px solid #fde047;border-radius:8px;padding:2px 6px;font-weight:700}
-
-</style>
+    .pc-on{background:#fff7a3!important;border-color:#fde047!important;box-shadow:0 0 0 2px rgba(253,224,71,.35) inset}
+    .pc-badge{display:inline-block;background:#fff7a3;border:1px solid #fde047;border-radius:8px;padding:2px 6px;font-weight:700}
+    .save-btn{background:#7c3aed;color:#fff;border:none;border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;font-family:inherit}
+    .save-btn:hover{background:#6d28d9}
+    .save-btn:disabled{background:#9ca3af;cursor:not-allowed}
+    .status-msg{margin-top:6px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;display:none}
+    .status-msg.ok{background:#f0fdf4;color:#166534;display:block;border:1px solid #86efac}
+    .status-msg.err{background:#fee2e2;color:#991b1b;display:block;border:1px solid #fca5a5}
+    .section-divider{border:none;border-top:2px dashed #d2cce0;margin:14px 0}
+    /* Pricing inputs completely hidden — used only by JS for Sheets save */
+    .pricing-data{display:none;visibility:hidden;position:absolute;pointer-events:none}
+    @media print{.save-section,.btns{display:none!important}}
+  </style>
 </head>
 <body>
 
-  <h1 id="title">Honeycomb Combo Calculator</h1>
+  <h1>Honeycomb / Pleated Calculator</h1>
+
+  <!-- HIDDEN PRICING DATA — invisible, only used when saving to Google Sheets -->
+  <div class="pricing-data" aria-hidden="true">
+    <!-- Aluminum profiles: price per meter, profile length in meters -->
+    <input id="p_x023"  type="number" value="85.42">
+    <input id="pl_x023" type="number" value="5.8">
+    <input id="p_x022"  type="number" value="112.81">
+    <input id="pl_x022" type="number" value="5.8">
+    <input id="p_x024"  type="number" value="65.61">
+    <input id="pl_x024" type="number" value="5.8">
+    <input id="p_x025"  type="number" value="101.34">
+    <input id="pl_x025" type="number" value="5.8">
+    <input id="p_pvc"   type="number" value="5.00">
+    <input id="pl_pvc"  type="number" value="4.5">
+    <!-- Small parts -->
+    <input id="pp_corner"   type="number" value="0.47">
+    <input id="pp_spring"   type="number" value="2.47">
+    <input id="pp_cushion"  type="number" value="1.50">
+    <input id="pp_endcap"   type="number" value="0.29">
+    <input id="pp_locking"  type="number" value="0.36">
+    <input id="pp_ropeclip" type="number" value="0.79">
+    <input id="pp_metal"    type="number" value="0.18">
+    <input id="pp_handle"   type="number" value="0.61">
+    <input id="pp_pvctube"  type="number" value="0.69">
+    <input id="pp_pvcbar"   type="number" value="0.25">
+    <!-- Conversion & markup -->
+    <input id="rmb_php" type="number" value="7.80">
+    <input id="markup"  type="number" value="30">
+  </div>
 
   <div class="container">
     <!-- Left: Inputs -->
@@ -51,31 +87,19 @@
       </div>
 
       <div class="grid2">
-        <div class="row">
-          <label for="wmm">Width (mm)</label>
-          <input id="wmm" type="number" step="1" value="1595">
-        </div>
-        <div class="row">
-          <label for="hmm">Height (mm)</label>
-          <input id="hmm" type="number" step="1" value="2110">
-        </div>
+        <div class="row"><label for="wmm">Width (mm)</label><input id="wmm" type="number" step="1" value="1595"></div>
+        <div class="row"><label for="hmm">Height (mm)</label><input id="hmm" type="number" step="1" value="2110"></div>
       </div>
 
-      <div class="row" id="row_meshcolor">
+      <div class="row hidden" id="row_meshcolor">
         <label for="meshcolor">Mesh Color (Combo only)</label>
-        <select id="meshcolor">
-          <option>Black</option>
-          <option>Gray</option>
-        </select>
+        <select id="meshcolor"><option>Black</option><option>Gray</option></select>
       </div>
 
       <div class="row">
         <label for="hc_color">Honeycomb Color</label>
         <select id="hc_color">
-          <option>Light Brown</option>
-          <option>Choco</option>
-          <option>Light Gray</option>
-          <option>Gray</option>
+          <option>Light Brown</option><option>Choco</option><option>Light Gray</option><option>Gray</option>
         </select>
       </div>
 
@@ -102,10 +126,8 @@
       <div class="row">
         <label for="branch">Branch</label>
         <select id="branch">
-          <option>Batangas Branch</option>
-          <option>Pampanga Branch</option>
-          <option>Shipping Thru AP Cargo</option>
-          <option>Shipping Thru Victory Drop & Go</option>
+          <option>Batangas Branch</option><option>Pampanga Branch</option>
+          <option>Shipping Thru AP Cargo</option><option>Shipping Thru Victory Drop & Go</option>
         </select>
       </div>
 
@@ -116,28 +138,24 @@
 
       <h2>Tech Settings</h2>
       <div class="grid2">
-        <div class="row">
-          <label for="mesh_ded">Mesh Height Deduction</label>
-          <input id="mesh_ded" type="number" step="1" value="40" title="mesh(H) = H − 40">
-        </div>
-        <div class="row">
-          <label for="hc_ded">Honeycomb Height Deduction</label>
-          <input id="hc_ded" type="number" step="1" value="35" title="honeycomb height = H − 35">
-        </div>
+        <div class="row"><label for="mesh_ded">Mesh Height Deduction</label><input id="mesh_ded" type="number" step="1" value="40"></div>
+        <div class="row"><label for="hc_ded">Honeycomb Height Deduction</label><input id="hc_ded" type="number" step="1" value="35"></div>
       </div>
       <div class="grid2">
-        <div class="row">
-          <label for="mesh_fold_div">Mesh Fold Divisor</label>
-          <input id="mesh_fold_div" type="number" step="0.1" value="20" title="mesh(fold) = round(W / 20)">
-        </div>
-        <div class="row">
-          <label for="hc_fold_div">Honeycomb Fold Divisor</label>
-          <input id="hc_fold_div" type="number" step="0.1" value="7.5" title="base honeycomb fold = round(W / 7.5)">
-        </div>
+        <div class="row"><label for="mesh_fold_div">Mesh Fold Divisor</label><input id="mesh_fold_div" type="number" step="0.1" value="20"></div>
+        <div class="row"><label for="hc_fold_div">Honeycomb Fold Divisor</label><input id="hc_fold_div" type="number" step="0.1" value="7.5"></div>
+      </div>
+
+      <hr class="section-divider">
+      <div class="save-section">
+        <h2>📊 Save to Google Sheets</h2>
+        <input id="gsheet_url" type="hidden" value="https://script.google.com/macros/s/AKfycbz3l_pXHwqzG2wO40oZwnFu5U8xgMmAGJ_G6uh68JawYP2oAVogBzV5SpjYA08W8nMhzA/exec">
+        <button class="save-btn" id="save_btn" onclick="saveToSheet()">💾 Save to Google Sheets</button>
+        <div id="status_msg" class="status-msg"></div>
       </div>
 
       <div class="btns">
-        <button class="primary" onclick="window.print()">Print / Screenshot</button>
+        <button class="primary" onclick="window.print()">🖨 Print / Screenshot</button>
       </div>
     </section>
 
@@ -160,10 +178,10 @@
         </div>
       </div>
 
-      <h2>Cuttings (mm)</h2>
+      <h2 style="margin-top:10px">Cuttings (mm)</h2>
       <table id="cuttings_table">
         <thead><tr><th>Material</th><th class="right">Qty</th><th class="right">Length (mm)</th></tr></thead>
-        <tbody id="cuttings_body">
+        <tbody>
           <tr><td>Side frame (X023)</td><td class="right mono">x2</td><td class="right mono" id="len_side_frame">—</td></tr>
           <tr><td>Top profile (X022)</td><td class="right mono">x1</td><td class="right mono" id="len_top_profile">—</td></tr>
           <tr><td>PVC</td><td class="right mono">x1</td><td class="right mono" id="len_pvc">—</td></tr>
@@ -175,7 +193,7 @@
 
       <div class="grid2" style="margin-top:10px">
         <div>
-          <h2>Mesh Details <span class="pill">shows in Combo</span></h2>
+          <h2>Mesh Details <span class="pill">Combo only</span></h2>
           <table>
             <thead><tr><th>Item</th><th>Color</th><th class="right">Value</th></tr></thead>
             <tbody id="mesh_block">
@@ -212,7 +230,6 @@
           </table>
         </div>
       </div>
-
     </section>
   </div>
 
@@ -220,219 +237,159 @@
   const $ = id => document.getElementById(id);
 
   function holesByHeight(h){
-    if (h <= 1000) return 4;
-    if (h <= 2000) return 6;
-    if (h <= 2500) return 8;
-    if (h <= 3000) return 10;
-    return 12;
+    if(h<=1000) return 4; if(h<=2000) return 6; if(h<=2500) return 8; if(h<=3000) return 10; return 12;
   }
 
   function updateHeaderAndMeshVisibility(){
-    const mode = $('mode').value;
-    const header = $('big_mode_header');
-    const rowMesh = $('row_meshcolor');
-
-    if(mode === 'honeycomb2'){
-      header.textContent = 'HONEYCOMB ONLY TWO WAY';
-      rowMesh.classList.add('hidden');
-    }else if(mode === 'honeycomb1'){
-      header.textContent = 'HONEYCOMB ONLY ONE WAY';
-      rowMesh.classList.add('hidden');
-    }else{
-      header.textContent = 'HONEYCOMB + SCREEN (COMBO)';
-      rowMesh.classList.remove('hidden');
-    }
+    const mode=$('mode').value, header=$('big_mode_header'), rowMesh=$('row_meshcolor');
+    if(mode==='honeycomb2'){ header.textContent='HONEYCOMB ONLY TWO WAY'; rowMesh.classList.add('hidden'); }
+    else if(mode==='honeycomb1'){ header.textContent='HONEYCOMB ONLY ONE WAY'; rowMesh.classList.add('hidden'); }
+    else{ header.textContent='HONEYCOMB + SCREEN (COMBO)'; rowMesh.classList.remove('hidden'); }
   }
 
   function compute(){
     updateHeaderAndMeshVisibility();
+    const mode=$('mode').value, w=+$('wmm').value||0, h=+$('hmm').value||0;
+    const meshColor=$('meshcolor').value, accColor=$('acc_color').value;
+    const replacementOnly=($('replacement').value==='yes');
+    const hcColor=$('hc_color').value, client=$('client').value.trim();
+    const branch=$('branch').value, powder=$('powder').value.trim(), notes=$('notes').value.trim();
+    const meshDed=+$('mesh_ded').value||40, hcDed=+$('hc_ded').value||35;
+    const meshFoldDiv=+$('mesh_fold_div').value||20, hcFoldDiv=+$('hc_fold_div').value||7.5;
 
-    const mode = $('mode').value;
-    const w = +$('wmm').value || 0;
-    const h = +$('hmm').value || 0;
-    const meshColor = $('meshcolor').value;
-    const accColor = $('acc_color') ? $('acc_color').value : '';
-    const replacementOnly = ($('replacement') && $('replacement').value === 'yes');
-    const hcColor = $('hc_color').value;
-    const client = $('client').value.trim();
-    const branch = $('branch').value;
-    const powder = $('powder').value.trim();
-    const notes = $('notes').value.trim();
+    $('o_client').textContent=client||'—';
+    $('o_branch').textContent=branch;
+    $('o_size').textContent=`${w} × ${h}`;
+    $('o_mesh').textContent=(mode==='combo')?meshColor:'—';
+    $('o_acc').textContent=accColor||'—';
+    $('mesh_color_cell').textContent=(mode==='combo')?meshColor:'—';
+    $('o_hc_color').textContent=hcColor||'—';
+    $('o_notes').textContent=notes||'—';
+    (function(o){ if(!o) return; o.className=notes?'mono pc-badge':'mono'; })($('o_notes'));
+    $('o_powder').textContent=powder?`Yes (${powder})`:'No';
+    if(powder){ $('powder').classList.add('pc-on'); $('o_powder').className='mono pc-badge'; }
+    else{ $('powder').classList.remove('pc-on'); $('o_powder').className='mono'; }
 
-    const meshDed = +$('mesh_ded').value || 40;
-    const hcDed = +$('hc_ded').value || 35;
-    const meshFoldDiv = +$('mesh_fold_div').value || 20;
-    const hcFoldDiv = +$('hc_fold_div').value || 7.5;
+    const ct=$('cuttings_table'); if(ct) ct.style.display=replacementOnly?'none':'';
 
-    // Meta
-    $('o_client').textContent = client || '—';
-    $('o_branch').textContent = branch;
-    $('o_size').textContent = `${w} × ${h}`;
-    $('o_mesh').textContent = (mode === 'combo') ? meshColor : '—';
-    $('o_acc').textContent = accColor || '—';
-    $('mesh_color_cell').textContent = (mode === 'combo') ? meshColor : '—';
-    $('o_hc_color').textContent = hcColor || '—';
-    $('o_notes').textContent = notes || '—';
-    /* NOTES-BADGE-APPLY */
-    (function(o){ if(!o) return; o.className = notes ? 'mono pc-badge' : 'mono'; })($('o_notes'));
-    $('o_powder').textContent = powder ? `Yes (${powder})` : 'No';
-    if (powder){ $('powder').classList.add('pc-on'); $('o_powder').className='mono pc-badge'; } else { $('powder').classList.remove('pc-on'); $('o_powder').className='mono'; }
-
-    const ct = $('cuttings_table'); if (ct) ct.style.display = replacementOnly ? 'none' : '';
-
-    if(!w || !h){ 
-      $('holes_table').innerHTML = '';
-      $('rope_table').innerHTML = '';
-      $('hc_height_out').textContent = '—';
-      $('hc_fold_out').textContent = '—';
-      return; 
+    if(!w||!h){
+      $('holes_table').innerHTML=''; $('rope_table').innerHTML='';
+      $('hc_height_out').textContent='—'; $('hc_fold_out').textContent='—';
+      return;
     }
 
-    // Cuttings (Pleated rules)
-    $('len_side_frame').textContent     = h - 51;
-    $('len_top_profile').textContent    = w - 51;
-    $('len_pvc').textContent            = h - meshDed;
-    $('len_bottom_profile').textContent = w - 51;
-    $('len_inner_frame').textContent    = h - meshDed;
-    $('len_middle_profile').textContent = h - 100;
-    $('qty_middle').textContent = (mode === 'honeycomb1') ? 'x1' : 'x2';
+    const lenSide=h-51, lenTop=w-51, lenPvc=h-meshDed, lenBottom=w-51, lenInner=h-meshDed, lenMiddle=h-100;
+    $('len_side_frame').textContent=lenSide;
+    $('len_top_profile').textContent=lenTop;
+    $('len_pvc').textContent=lenPvc;
+    $('len_bottom_profile').textContent=lenBottom;
+    $('len_inner_frame').textContent=lenInner;
+    $('len_middle_profile').textContent=lenMiddle;
+    const middleQty=(mode==='honeycomb1')?1:2;
+    $('qty_middle').textContent=`x${middleQty}`;
 
-    // Mesh block (show only in Combo)
-    const showMesh = (mode === 'combo');
-    document.getElementById('mesh_block').style.display = showMesh ? '' : 'none';
-
+    const showMesh=(mode==='combo');
+    $('mesh_block').style.display=showMesh?'':'none';
     if(showMesh){
-      const meshH = h - meshDed;
-      const meshFold = Math.round(w / meshFoldDiv);
-      $('mesh_h_value').textContent = meshH;
-      $('mesh_fold_value').textContent = meshFold;
+      $('mesh_h_value').textContent=h-meshDed;
+      $('mesh_fold_value').textContent=Math.round(w/meshFoldDiv);
     }
 
-    // Honeycomb
-    const pcs = (mode === 'honeycomb2') ? 2 : 1;
-    const hcHeight = h - hcDed;
-    const baseFold = Math.round(w / hcFoldDiv);
-    const hcFold = Math.round(baseFold / pcs);
+    const pcs=(mode==='honeycomb2')?2:1;
+    $('hc_height_out').textContent=h-hcDed;
+    $('hc_pcs').textContent=pcs===1?'1PCS':'2PCS';
+    $('hc_fold_out').textContent=Math.round(Math.round(w/hcFoldDiv)/pcs);
 
-    $('hc_height_out').textContent = hcHeight;
-    $('hc_pcs').textContent = (pcs === 1 ? '1PCS' : '2PCS');
-    $('hc_fold_out').textContent = hcFold;
-
-    // Holes (Pleated)
-    const meshHforHoles = h - meshDed;
-    let holes = holesByHeight(h);
-    const gapOf = (n)=> (meshHforHoles - 60) / (n - 1);
-    let gap = gapOf(holes);
-    while (gap > 350 && holes < 12){
-      holes = (holes===4?6:holes===6?8:holes===8?10:12);
-      gap = gapOf(holes);
-    }
-    const holesBody = $('holes_table');
-    holesBody.innerHTML = '';
-    let pos = 30;
+    // Holes
+    const meshHforHoles=h-meshDed;
+    let holes=holesByHeight(h);
+    const gapOf=n=>(meshHforHoles-60)/(n-1);
+    let gap=gapOf(holes);
+    while(gap>350&&holes<12){ holes=(holes===4?6:holes===6?8:holes===8?10:12); gap=gapOf(holes); }
+    const holesBody=$('holes_table'); holesBody.innerHTML='';
+    let pos=30;
     for(let i=1;i<=holes;i++){
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${i}</td><td class="right mono">${Math.round(pos)}</td>`;
-      holesBody.appendChild(tr);
-      pos += gap;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${i}</td><td class="right mono">${Math.round(pos)}</td>`;
+      holesBody.appendChild(tr); pos+=gap;
     }
 
-    // Rope sizes
-    const maxRopes = Math.min(Math.floor(holes/2), 6);
-    const firstRope = w + h + 300;
-    const qty = (mode === 'honeycomb1') ? 2 : 4;
-    const ropeBody = $('rope_table');
-    ropeBody.innerHTML = '';
+    // Ropes
+    const maxRopes=Math.min(Math.floor(holes/2),6), firstRope=w+h+300, qty=(mode==='honeycomb1')?2:4;
+    const ropeBody=$('rope_table'); ropeBody.innerHTML='';
     for(let i=0;i<maxRopes;i++){
-      const val = Math.round(firstRope - i*gap);
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${i+1}</td><td class="right mono">${val}</td><td class="right mono">${qty}</td>`;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${i+1}</td><td class="right mono">${Math.round(firstRope-i*gap)}</td><td class="right mono">${qty}</td>`;
       ropeBody.appendChild(tr);
     }
   }
 
-  // --- LIVE AUTO-REFRESH ---
-  const inputs = [
-    'mode','wmm','hmm','meshcolor','hc_color','powder','client','branch','notes',
-    'mesh_ded','hc_ded','mesh_fold_div','hc_fold_div','acc_color','replacement'
-  ].map($);
-
-  inputs.forEach(el => {
-    if(!el) return;
-    const evt = (el.tagName === 'SELECT') ? 'change' : 'input';
-    el.addEventListener(evt, compute);
+  ['mode','wmm','hmm','meshcolor','hc_color','powder','client','branch','mesh_ded','hc_ded','mesh_fold_div','hc_fold_div','acc_color','replacement'].forEach(id=>{
+    const el=$(id); if(!el) return;
+    el.addEventListener((el.tagName==='SELECT')?'change':'input', compute);
   });
-
+  $('notes').addEventListener('input', compute);
   window.addEventListener('DOMContentLoaded', compute);
+
+  // ── SAVE TO GOOGLE SHEETS ──
+  async function saveToSheet(){
+    const url=($('gsheet_url').value||'').trim();
+    const msg=$('status_msg'), btn=$('save_btn');
+    if(!url){ msg.className='status-msg err'; msg.textContent='❌ Please enter your Google Apps Script URL first.'; return; }
+
+    const w=+$('wmm').value||0, h=+$('hmm').value||0;
+    const rate=+$('rmb_php').value||1, markupPct=+$('markup').value||0;
+    const mode=$('mode').value, replacementOnly=($('replacement').value==='yes');
+    const meshDed=+$('mesh_ded').value||40, hcDed=+$('hc_ded').value||35;
+    const hcFoldDiv=+$('hc_fold_div').value||7.5;
+    const pcs=(mode==='honeycomb2')?2:1;
+    const middleQty=(mode==='honeycomb1')?1:2;
+    const lenSide=h-51, lenTop=w-51, lenPvc=h-meshDed, lenBottom=w-51, lenInner=h-meshDed, lenMiddle=h-100;
+
+    let totalRMB=0;
+    if(!replacementOnly){
+      // price per meter × (cut mm / 1000) × qty
+      totalRMB += (lenSide/1000)*(+$('p_x023').value)*2;
+      totalRMB += (lenTop/1000)*(+$('p_x022').value)*1;
+      totalRMB += (lenBottom/1000)*(+$('p_x023').value)*1;
+      totalRMB += (lenInner/1000)*(+$('p_x024').value)*2;
+      totalRMB += (lenMiddle/1000)*(+$('p_x025').value)*middleQty;
+      totalRMB += (lenPvc/1000)*(+$('p_pvc').value)*1;
+      [['pp_corner',2],['pp_spring',1],['pp_cushion',1],['pp_endcap',2],['pp_locking',2],
+       ['pp_ropeclip',1],['pp_metal',3],['pp_handle',2],['pp_pvctube',1],['pp_pvcbar',1]
+      ].forEach(([id,qty])=>{ totalRMB+=(+$(id).value)*qty; });
+    }
+    const totalPHP=totalRMB*rate, sellPHP=totalPHP*(1+markupPct/100);
+
+    const payload={
+      sheet:'Honeycomb', timestamp:new Date().toISOString(),
+      mode, client:$('client').value||'—', branch:$('branch').value,
+      replacement:$('replacement').value,
+      width_mm:w, height_mm:h,
+      hc_color:$('hc_color').value,
+      mesh_color:(mode==='combo')?$('meshcolor').value:'—',
+      acc_color:$('acc_color').value,
+      powdercoat:$('powder').value||'', notes:$('notes').value||'',
+      hc_height:h-hcDed,
+      hc_fold:Math.round(Math.round(w/hcFoldDiv)/pcs),
+      cut_side_frame:lenSide, cut_top:lenTop, cut_bottom:lenBottom,
+      cut_inner:lenInner, cut_middle:lenMiddle, cut_pvc:lenPvc,
+      total_rmb:+totalRMB.toFixed(2), total_php:+totalPHP.toFixed(2),
+      sell_php:+sellPHP.toFixed(2), markup_pct:markupPct,
+    };
+
+    btn.disabled=true; btn.textContent='Saving…';
+    msg.className='status-msg'; msg.textContent='';
+    try{
+      const params = new URLSearchParams({ payload: JSON.stringify(payload) });
+      await fetch(url, { method:'POST', mode:'no-cors', body: params });
+      msg.className='status-msg ok'; msg.textContent='✅ Saved to Google Sheets!';
+    }catch(err){
+      msg.className='status-msg err'; msg.textContent='❌ Error: '+err.message;
+    }finally{
+      btn.disabled=false; btn.textContent='💾 Save to Google Sheets';
+    }
+  }
 </script>
-
-
-<!-- Save to Inventory Button (added) -->
-<div class="card no-print" style="margin-top:12px;text-align:center">
-  <button onclick="saveToInventory()">💾 Save to Inventory</button>
-</div>
-
-<script>
-/**
- * Save to Inventory (keeps your existing HOLD DISTANCES UI as-is)
- * Replace ENDPOINT with your Apps Script Web App URL
- * Example: const ENDPOINT = 'https://script.google.com/macros/s/XXXX/exec?action=reserve';
- */
-const ENDPOINT = 'PASTE_YOUR_WEB_APP_URL_HERE?action=reserve';
-
-async function saveToInventory(){
-  if (!ENDPOINT || ENDPOINT.indexOf('PASTE_YOUR_WEB_APP_URL_HERE') !== -1){
-    alert('Please set your Web App URL in ENDPOINT first.');
-    return;
-  }
-  // Collect basic fields already present in this version
-  const w = Number(document.getElementById('wmm')?.value || 0);
-  const h = Number(document.getElementById('hmm')?.value || 0);
-  const client = document.getElementById('client')?.value || '';
-  const honeyColor = document.getElementById('honey_color')?.value || '';
-  const powder = document.getElementById('powder')?.value || '';
-  const mode = document.getElementById('mode')?.value || 'one'; // one/two/combo
-
-  // Grab the HOLD DISTANCES values exactly as shown (keeps your numbers)
-  const holdBody = document.getElementById('hold_body');
-  const holdInputs = holdBody ? holdBody.querySelectorAll('input') : [];
-  const holdDistances = Array.from(holdInputs).map(inp => Number(inp.value || 0)).filter(v => !Number.isNaN(v));
-
-  // Build a simple BOM (sample SKUs; replace with real ones later)
-  const items = [];
-  if (mode === 'combo'){
-    items.push({ sku:'MESH-8FT-BLK', qty: 1 });
-  }
-  // Use hold distances if you map them to cut points later; for now we just include W/H as notes
-  items.push({ sku:'WL3007', qty:2, length_mm: Math.max(0, h - 51) });
-  items.push({ sku:'WL3007-TOP', qty:1, length_mm: Math.max(0, w - 51) });
-  items.push({ sku:'LOCK-PREM', qty:1 });
-
-  const bom = {
-    action: 'reserve',
-    job_id: 'JOB-' + Date.now(),
-    customer: client || 'Walk-in',
-    calculator: 'Honeycomb Combo v4 (White)',
-    status: 'RESERVED',
-    notes: `HC:${honeyColor} ${powder ? 'Powder:'+powder : ''} | Hold:` + holdDistances.join(','),
-    items
-  };
-
-  try{
-    const res = await fetch(ENDPOINT, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(bom)
-    });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.message || 'Save failed');
-    alert('Saved! Reservation ID: ' + data.reservation_id);
-  }catch(err){
-    alert('Inventory error: ' + err.message);
-    console.error(err);
-  }
-}
-</script>
-
 </body>
 </html>
