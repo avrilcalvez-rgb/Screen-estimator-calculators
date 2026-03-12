@@ -71,31 +71,24 @@ th{color:var(--muted);background:rgba(0,20,14,.5);font-weight:600}
       <stop offset="100%" stop-color="#00b248" stop-opacity=".3"/>
     </linearGradient>
   </defs>
-  <!-- Diagonal bars -->
   <rect x="-200" y="-100" width="500" height="1200" rx="20" transform="rotate(-45 250 400)" fill="url(#g1)" opacity=".25"/>
   <rect x="100" y="-100" width="300" height="1200" rx="10" transform="rotate(-45 450 400)" fill="url(#g2)" opacity=".2"/>
   <rect x="700" y="-100" width="500" height="1200" rx="20" transform="rotate(-45 900 400)" fill="url(#g1)" opacity=".18"/>
   <rect x="1050" y="-100" width="300" height="1200" rx="10" transform="rotate(-45 1200 400)" fill="url(#g3)" opacity=".2"/>
-  <!-- Corner bracket top-left -->
   <rect x="30" y="30" width="180" height="18" rx="4" fill="url(#g3)" opacity=".65"/>
   <rect x="30" y="30" width="18" height="180" rx="4" fill="url(#g3)" opacity=".65"/>
-  <!-- Corner bracket top-right -->
   <rect x="1230" y="30" width="180" height="18" rx="4" fill="url(#g1)" opacity=".65"/>
   <rect x="1392" y="30" width="18" height="180" rx="4" fill="url(#g1)" opacity=".65"/>
-  <!-- Corner bracket bottom-left -->
   <rect x="30" y="852" width="180" height="18" rx="4" fill="url(#g2)" opacity=".65"/>
   <rect x="30" y="690" width="18" height="180" rx="4" fill="url(#g2)" opacity=".65"/>
-  <!-- Corner bracket bottom-right -->
   <rect x="1230" y="852" width="180" height="18" rx="4" fill="url(#g3)" opacity=".65"/>
   <rect x="1392" y="690" width="18" height="180" rx="4" fill="url(#g3)" opacity=".65"/>
-  <!-- Floating diamonds -->
   <rect x="100" y="480" width="100" height="100" rx="8" fill="none" stroke="url(#g1)" stroke-width="8" transform="rotate(45 150 530)" opacity=".7"/>
   <rect x="115" y="495" width="70" height="70" rx="5" fill="url(#g3)" transform="rotate(45 150 530)" opacity=".35"/>
   <rect x="1130" y="180" width="80" height="80" rx="6" fill="none" stroke="url(#g2)" stroke-width="7" transform="rotate(45 1170 220)" opacity=".7"/>
   <rect x="1145" y="195" width="50" height="50" rx="4" fill="url(#g1)" transform="rotate(45 1170 220)" opacity=".3"/>
   <rect x="1130" y="440" width="60" height="60" rx="5" fill="none" stroke="url(#g3)" stroke-width="5" transform="rotate(45 1160 470)" opacity=".6"/>
   <rect x="200" y="640" width="60" height="60" rx="4" fill="none" stroke="url(#g2)" stroke-width="5" transform="rotate(45 230 670)" opacity=".55"/>
-  <!-- Dot grids -->
   <g opacity=".5">
     <circle cx="260" cy="60" r="4" fill="#69ff97"/><circle cx="280" cy="60" r="4" fill="#69ff97"/><circle cx="300" cy="60" r="4" fill="#69ff97"/>
     <circle cx="260" cy="80" r="4" fill="#69ff97"/><circle cx="280" cy="80" r="4" fill="#69ff97"/><circle cx="300" cy="80" r="4" fill="#69ff97"/>
@@ -112,10 +105,8 @@ th{color:var(--muted);background:rgba(0,20,14,.5);font-weight:600}
     <circle cx="80" cy="808" r="5" fill="#00ff99"/><circle cx="104" cy="808" r="5" fill="#00ff99"/><circle cx="128" cy="808" r="5" fill="#00ff99"/><circle cx="152" cy="808" r="5" fill="#00ff99"/>
     <circle cx="80" cy="832" r="5" fill="#00ff99"/><circle cx="104" cy="832" r="5" fill="#00ff99"/><circle cx="128" cy="832" r="5" fill="#00ff99"/>
   </g>
-  <!-- Small accent crosses/squares -->
   <rect x="136" y="306" width="14" height="14" rx="2" fill="#00e5b0" opacity=".8"/>
   <rect x="1300" y="375" width="14" height="14" rx="2" fill="#69ff97" opacity=".8"/>
-  <!-- Bottom-right corner large bracket -->
   <rect x="980" y="620" width="400" height="20" rx="5" fill="url(#g1)" opacity=".5"/>
   <rect x="1360" y="620" width="20" height="260" rx="5" fill="url(#g1)" opacity=".5"/>
   <rect x="980" y="860" width="400" height="20" rx="5" fill="url(#g1)" opacity=".5"/>
@@ -197,7 +188,6 @@ th{color:var(--muted);background:rgba(0,20,14,.5);font-weight:600}
     </div>
     <div id="save_status" style="font-size:12px;margin-top:6px;color:var(--accent);display:none;"></div>
 
-    <!-- Info boxes for mesh calculation -->
     <div id="oneway_info" class="info-box" style="display:none">
       <strong>One Way Mesh Sizes:</strong><br>
       8cm = 78.5mm | 6cm = 59.5mm | 4cm = 40mm<br>
@@ -326,7 +316,7 @@ th{color:var(--muted);background:rgba(0,20,14,.5);font-weight:600}
         </div>
       </div>
 
-      <!-- ONE WAY ADJUSTING MATERIALS (shown last) -->
+      <!-- ONE WAY ADJUSTING MATERIALS -->
       <div id="oneway_adjusters" style="margin-top:12px">
         <h2>Adjusting Materials <span style="font-size:10px;font-weight:400;color:var(--muted)">(editable)</span></h2>
         <table>
@@ -344,7 +334,7 @@ th{color:var(--muted);background:rgba(0,20,14,.5);font-weight:600}
       </div>
     </div>
 
-    <!-- MATERIAL COST SECTION — hidden, values computed silently for Google Sheets only -->
+    <!-- MATERIAL COST SECTION — hidden -->
     <div style="display:none">
       <table>
         <tbody>
@@ -364,9 +354,6 @@ th{color:var(--muted);background:rgba(0,20,14,.5);font-weight:600}
 <script>
 var currentMode = 'oneway';
 
-// Adjuster Map - based on target remaining space (mm)
-// RULE: WL1019 (0mm hooked) and WL1417 (3mm hooked) are MUTUALLY EXCLUSIVE
-// Must COMPLETELY FILL the remaining space
 var ADJUSTER_MAP = [
   {gap:0,  wl1019:1, wl1316:0, wl0816:0, wl1417:0, achieved:0},
   {gap:1,  wl1019:1, wl1316:0, wl0816:0, wl1417:0, achieved:0},
@@ -422,16 +409,10 @@ var ADJUSTER_MAP = [
 ];
 
 function getAdjusters(targetGap){
-  // Round to nearest mm
   var gap = Math.round(targetGap);
-  
-  // Clamp to 0-50 range (expanded from 30 to cover all cases)
   gap = Math.max(0, Math.min(50, gap));
-  
-  // Find the adjuster combination
   var adj = ADJUSTER_MAP.find(function(a){ return a.gap === gap; });
-  if(!adj) adj = ADJUSTER_MAP[0]; // fallback to 0mm
-  
+  if(!adj) adj = ADJUSTER_MAP[0];
   return adj;
 }
 
@@ -442,7 +423,6 @@ function computeCost(meshLengthMm, adj, adjMultiplier){
   var direction = document.getElementById('direction').value;
   var phpRate = +document.getElementById('usd_php_rate').value || 60;
 
-  // ── UNIT PRICES ──────────────────────────────────────────────
   var P = {
     cornerSideFrame: 0.33, cornerDoorRail: 0.31,
     pullRodUpperL: 1.50,   pullRodUpperR: 1.50,
@@ -450,45 +430,40 @@ function computeCost(meshLengthMm, adj, adjMultiplier){
     connectingRod: 0.78,   bottomMRod:    0.04,
     mRodFixture:   0.04,   tBar:          0.03,
     clip8cm:       0.06,   clip6cm:       0.06,
-    clip4cm:       0.05,   pin:           67.50/2500,  // $0.027/pc
-    magneticStrip: 5.21/26,   // $0.2004/m
-    weatherStrip:  7.89/250,  // $0.03156/m
+    clip4cm:       0.05,   pin:           67.50/2500,
+    magneticStrip: 5.21/26,
+    weatherStrip:  7.89/250,
     screw:         0.00,   hookLock:      4.91,
     lock:          0.00,   maskLock:      3.86,
-    mesh:          1.20,   // per meter, all sizes
+    mesh:          1.20,
     wl1019: 3.48, wl1316: 4.80, wl0816: 3.48, wl1417: 3.86,
-    // Aluminum: weight(kg/m) × price($/kg) = price per meter
-    alWL4016: 0.418 * 7.35,  // $3.0723/m  Side frame
-    alWL3418: 0.585 * 6.35,  // $3.7147/m  Pull rod
-    alWL4026: 0.786 * 5.35,  // $4.2051/m  Upper rail
-    alWL4013: 0.458 * 4.35   // $1.9923/m  Bottom rail
+    alWL4016: 0.418 * 7.35,
+    alWL3418: 0.585 * 6.35,
+    alWL4026: 0.786 * 5.35,
+    alWL4013: 0.458 * 4.35
   };
 
-  // ── ALUMINUM PROFILES (cut length mm → m) ────────────────────
   var sideFrameM  = (h - 15) / 1000;
   var pullRodM    = (h - 78) / 1000;
   var upperRailM  = (w - 32) / 1000;
   var bottomRailM = (w - 32) / 1000;
   var pullRodQty  = mode === 'twoway' ? 2 : 1;
 
-  // ── MESH COUNTS ──────────────────────────────────────────────
+  // ── FIXED: use .value for oneway input fields ──
   var n8, n6, n4;
   if(mode === 'oneway'){
     n8 = +document.getElementById('mesh_8cm').value || 0;
     n6 = +document.getElementById('mesh_6cm').value || 0;
     n4 = +document.getElementById('mesh_4cm').value || 0;
   } else {
-    // For twoway, read totals from the total cells (auto-updated by onMeshOverride)
     n8 = +document.getElementById('mesh_8cm_total').textContent || 0;
     n6 = +document.getElementById('mesh_6cm_total').textContent || 0;
     n4 = +document.getElementById('mesh_4cm_total').textContent || 0;
   }
   var totalMesh = n8 + n6 + n4;
 
-  // ── MESH STOCK LENGTH ────────────────────────────────────────
   var meshStockM = meshLengthMm <= 2300 ? 2.3 : meshLengthMm <= 2500 ? 2.5 : 3.0;
 
-  // ── PART QUANTITIES ──────────────────────────────────────────
   var isLR       = direction === 'Left → Right';
   var qCornerSF  = 2;
   var qCornerDR  = 2;
@@ -510,7 +485,6 @@ function computeCost(meshLengthMm, adj, adjMultiplier){
   var qMaskLock  = mode === 'twoway' ? 1 : 0;
   var hM         = h / 1000;
 
-  // ── COSTS ────────────────────────────────────────────────────
   var cAlSF   = 2 * sideFrameM  * P.alWL4016;
   var cAlPR   = pullRodQty * pullRodM * P.alWL3418;
   var cAlUR   = upperRailM  * P.alWL4026;
@@ -542,8 +516,6 @@ function computeCost(meshLengthMm, adj, adjMultiplier){
 
   var grandTotalPHP = grandTotal * phpRate;
 
-  // ── SELLING PRICE (from quotation calculator formula) ────────────────────
-  // Rate: ₱850/sqft, min 20 sqft, +₱3,000 opening for Two-way
   var wInches   = w / 25.4;
   var hInches   = h / 25.4;
   var sqft      = (wInches * hInches) / 144;
@@ -551,7 +523,6 @@ function computeCost(meshLengthMm, adj, adjMultiplier){
   var sellingPricePHP = Math.round(usedSqft * 850 + (currentMode === 'twoway' ? 3000 : 0));
   var profitPHP = sellingPricePHP - grandTotalPHP;
 
-  // ── STORE FOR SAVE ───────────────────────────────────────────
   window._lastGrandTotalUSD    = grandTotal;
   window._lastGrandTotalPHP    = grandTotalPHP;
   window._lastSellingPricePHP  = sellingPricePHP;
@@ -559,7 +530,6 @@ function computeCost(meshLengthMm, adj, adjMultiplier){
   window._lastAdjMultiplier    = adjMultiplier;
   window._lastAdj              = adj;
 
-  // ── UPDATE HIDDEN DOM ────────────────────────────────────────
   document.getElementById('cost_mesh_qty').textContent = totalMesh + ' pcs / ' + meshStockM + 'm stock';
   document.getElementById('cost_mesh_total').textContent = 'US$' + (cMesh8+cMesh6+cMesh4).toFixed(2);
   document.getElementById('cost_wl1019_qty').textContent = adj.wl1019 * adjMultiplier;
@@ -583,14 +553,12 @@ function displayAdjusters(adj){
   document.getElementById('total_adjustment').textContent = achieved + ' mm';
 }
 
-// Called when secretary manually edits mesh counts or adjusters
 function onMeshOverride(){
   var w = +document.getElementById('width_mm').value || 0;
   var h = +document.getElementById('height_mm').value || 0;
   if(!w || !h) return;
 
   if(currentMode === 'oneway'){
-    // Recalculate remaining space from manually entered mesh counts
     var n8 = +document.getElementById('mesh_8cm').value || 0;
     var n6 = +document.getElementById('mesh_6cm').value || 0;
     var n4 = +document.getElementById('mesh_4cm').value || 0;
@@ -599,7 +567,6 @@ function onMeshOverride(){
     var remaining = available - used + 5;
     document.getElementById('remaining_oneway').textContent = remaining.toFixed(1) + ' mm';
 
-    // Recalculate total adjustment mm from adjuster inputs
     var wl1019 = +document.getElementById('adj_wl1019').value || 0;
     var wl1316 = +document.getElementById('adj_wl1316').value || 0;
     var wl0816 = +document.getElementById('adj_wl0816').value || 0;
@@ -607,12 +574,10 @@ function onMeshOverride(){
     var totalAdj = wl1019*0 + wl1316*10 + wl0816*5 + wl1417*3;
     document.getElementById('total_adjustment').textContent = totalAdj + ' mm';
 
-    // Re-run cost with manually set adj values
     var adjOverride = {wl1019:wl1019, wl1316:wl1316, wl0816:wl0816, wl1417:wl1417, achieved:totalAdj};
     computeCost(h-86, adjOverride, 1);
 
   } else {
-    // Twoway: update totals from left+right inputs
     var l8 = +document.getElementById('mesh_8cm_left').value || 0;
     var r8 = +document.getElementById('mesh_8cm_right').value || 0;
     var l6 = +document.getElementById('mesh_6cm_left').value || 0;
@@ -628,15 +593,13 @@ function onMeshOverride(){
     var remainPerSide = (doorWidth - used)/2 + 5;
     document.getElementById('remaining_twoway').textContent = remainPerSide.toFixed(1) + ' mm per side';
 
-    // Twoway adjuster totals
     var ids = ['wl1019','wl1316','wl0816','wl1417'];
-    var sizes = {wl1019:0, wl1316:10, wl0816:5, wl1417:3};
     var adjOverride = {wl1019:0, wl1316:0, wl0816:0, wl1417:0, achieved:0};
     ids.forEach(function(k){
       var rv = +document.getElementById('tw_adj_'+k+'_r').value || 0;
       var lv = +document.getElementById('tw_adj_'+k+'_l').value || 0;
       document.getElementById('tw_adj_'+k+'_t').textContent = rv+lv;
-      adjOverride[k] = rv; // per side (use right side as reference)
+      adjOverride[k] = rv;
     });
     var totalAdj = adjOverride.wl1316*10 + adjOverride.wl0816*5 + adjOverride.wl1417*3;
     adjOverride.achieved = totalAdj;
@@ -651,24 +614,17 @@ function switchMode(mode){
   document.getElementById('mode').value = mode;
   document.getElementById('btn_oneway').classList.toggle('active', mode==='oneway');
   document.getElementById('btn_twoway').classList.toggle('active', mode==='twoway');
-  
   document.getElementById('title_header').textContent = mode==='oneway' ? 'ONE WAY SECURITY SCREEN' : 'TWO WAY SECURITY SCREEN';
   document.getElementById('mesh_plan_title').textContent = mode==='oneway' ? 'Mesh Plan — One Way' : 'Mesh Plan — Two Way';
-  
   document.getElementById('direction_row').style.display = mode==='oneway' ? '' : 'none';
   document.getElementById('out_direction').closest('.row-line').style.display = mode==='oneway' ? '' : 'none';
-  
   document.getElementById('oneway_info').style.display = mode==='oneway' ? '' : 'none';
   document.getElementById('twoway_info').style.display = mode==='twoway' ? '' : 'none';
-  
   document.getElementById('oneway_mesh_table').style.display = mode==='oneway' ? '' : 'none';
   document.getElementById('twoway_mesh_table').style.display = mode==='twoway' ? '' : 'none';
   document.getElementById('twoway_adjusters').style.display = mode==='twoway' ? '' : 'none';
   document.getElementById('oneway_adjusters').style.display = mode==='oneway' ? '' : 'none';
-  
-  // Update pull rod qty (1 for one-way, 2 for two-way)
   document.getElementById('qty_pullrod').textContent = mode==='oneway' ? '1' : '2';
-  
   compute();
 }
 
@@ -713,7 +669,6 @@ function compute(){
   var powder = document.getElementById('powder_code').value.trim();
   var notes = document.getElementById('notes').value.trim();
   
-  // Update meta
   document.getElementById('out_client').textContent = client || '—';
   document.getElementById('out_branch').textContent = branch;
   document.getElementById('out_direction').textContent = currentMode==='oneway' ? direction : 'Two Way';
@@ -728,7 +683,6 @@ function compute(){
     return;
   }
   
-  // CUTTINGS (same for both modes)
   var sideframe = (h - 15);
   var pullrod = (h - 78);
   var upperrail = (w - 32);
@@ -740,7 +694,6 @@ function compute(){
   document.getElementById('len_bottomrail').textContent = bottomrail.toFixed(2);
   document.getElementById('len_mesh').textContent = meshLength.toFixed(2);
   
-  // MESH STOCK RECOMMENDATION (2.3m, 2.5m, 3m)
   var meshStockRec = '';
   if(meshLength <= 2300){
     meshStockRec = '2.3m (2300mm)';
@@ -763,17 +716,8 @@ function compute(){
 function computeOneWay(w, h){
   var usableWidth = w - 64;
   document.getElementById('usable_width').textContent = usableWidth + ' mm';
-
   var availableSpace = usableWidth;
-
-  // ── NEW ALGORITHM ─────────────────────────────────────────────
-  // 1. Maximize 8cm pairs (primary)
-  // 2. Use minimum 6cm/4cm pairs to fill gap (secondary)
-  // 3. Prefer positive gap (over +1~2mm) over negative (under)
-  // 4. Allow -2mm to +50mm gap
-  // ─────────────────────────────────────────────────────────────
   var candidates = [];
-  // Include +5mm tolerance AND -2mm under-tolerance in max8
   var max8 = 2 * Math.floor((availableSpace + 5 + 2) / (2 * 78.5));
 
   for(var n8 = max8; n8 >= 0; n8 -= 2){
@@ -797,10 +741,10 @@ function computeOneWay(w, h){
   if(candidates.length > 0){
     candidates.sort(function(a, b){
       var pa = a.n8/a.total, pb = b.n8/b.total;
-      if(Math.abs(pa-pb) > 0.001) return pb - pa;          // higher %8cm wins
+      if(Math.abs(pa-pb) > 0.001) return pb - pa;
       var as = a.final >= 0 ? 1 : 0, bs = b.final >= 0 ? 1 : 0;
-      if(as !== bs) return bs - as;                          // positive gap preferred
-      return Math.abs(a.final) - Math.abs(b.final);         // smaller gap wins
+      if(as !== bs) return bs - as;
+      return Math.abs(a.final) - Math.abs(b.final);
     });
     best = candidates[0];
   }
@@ -823,29 +767,27 @@ function computeTwoWay(w, h){
   var mesh_8cm_width = 78.5;
   var mesh_6cm_width = 59.5;
   var mesh_4cm_width = 40;
-  
-  // Find best combination: maximize 8cm, minimize remaining, adjusters <= 4
   var availableSpace = doorWidth;
   var best = null;
   var max8 = 4 * Math.floor(availableSpace / (4 * mesh_8cm_width));
   
   for(var n8 = max8; n8 >= 0; n8 -= 4){
     var after8 = availableSpace - (n8 * mesh_8cm_width);
-    var max6 = 4 * Math.floor((after8 + 16) / (4 * mesh_6cm_width)); // +16mm tolerance for compression
+    var max6 = 4 * Math.floor((after8 + 16) / (4 * mesh_6cm_width));
     var foundAtThisLevel = false;
     
     for(var n6 = max6; n6 >= 0; n6 -= 4){
       var after6 = after8 - (n6 * mesh_6cm_width);
-      var max4 = 4 * Math.floor((after6 + 16) / (4 * mesh_4cm_width)); // +16mm tolerance
+      var max4 = 4 * Math.floor((after6 + 16) / (4 * mesh_4cm_width));
       
       for(var n4 = max4; n4 >= 0; n4 -= 4){
-        if(n4 > 0 && n6 === 0) continue; // 4cm cannot be used without 6cm
-        if(n4 > n6 && n6 > 0) continue;  // 4cm must not exceed 6cm count
-        if(n8 <= n6 + n4 && !(n6 === 0 && n4 === 0)) continue; // 8cm must be majority
+        if(n4 > 0 && n6 === 0) continue;
+        if(n4 > n6 && n6 > 0) continue;
+        if(n8 <= n6 + n4 && !(n6 === 0 && n4 === 0)) continue;
         var remainingTotal = after6 - (n4 * mesh_4cm_width);
         var remainingPerSide = (remainingTotal / 2) + 5;
-        if(remainingPerSide < -2) continue; // allow up to -2mm compression per side
-        if(remainingPerSide > 50) continue; // outside adjuster range
+        if(remainingPerSide < -2) continue;
+        if(remainingPerSide > 50) continue;
         
         var adj = getAdjusters(Math.max(0, remainingPerSide));
         var adjTotal = adj.wl1019 + adj.wl1316 + adj.wl0816 + adj.wl1417;
@@ -861,9 +803,7 @@ function computeTwoWay(w, h){
     if(foundAtThisLevel) break;
   }
   
-  // Fallback: use max 8cm with no 6cm/4cm only if nothing found at all
   if(!best){
-    // Try reducing 8cm until remaining per side <= 50mm (within adjuster range)
     for(var fb8 = max8; fb8 >= 0; fb8 -= 4){
       var fbRem = (availableSpace - (fb8 * mesh_8cm_width)) / 2 + 5;
       if(fbRem <= 50){ best = {n8: fb8, n6: 0, n4: 0, remainingPerSide: fbRem}; break; }
@@ -892,17 +832,14 @@ function computeTwoWay(w, h){
   document.getElementById('total_mesh_width').textContent = totalMeshWidth.toFixed(2) + ' mm';
   document.getElementById('remaining_twoway').textContent = remainingPerSide.toFixed(1) + ' mm per side';
   
-  // Adjusters based on remaining per side
   var adj = getAdjusters(remainingPerSide);
   
-  // Clear one-way adjuster inputs
   document.getElementById('adj_wl1019').value = '';
   document.getElementById('adj_wl1316').value = '';
   document.getElementById('adj_wl0816').value = '';
   document.getElementById('adj_wl1417').value = '';
   document.getElementById('total_adjustment').textContent = '— mm';
   
-  // Show two-way adjusters (same per side, left and right)
   document.getElementById('twoway_adjusters').style.display = '';
   document.getElementById('tw_adj_wl1019_r').value = adj.wl1019;
   document.getElementById('tw_adj_wl1019_l').value = adj.wl1019;
@@ -918,15 +855,12 @@ function computeTwoWay(w, h){
   document.getElementById('tw_adj_wl1417_t').textContent = adj.wl1417 * 2;
   document.getElementById('tw_total_adjustment').textContent = adj.achieved + ' mm per side';
 
-  // Cost calculation - two way uses adjMultiplier=2 (both sides)
-  var meshLengthMm = h - 86;
-  computeCost(meshLengthMm, adj, 2);
+  computeCost(h-86, adj, 2);
 }
 
 // =============================================
 // GOOGLE SHEETS INTEGRATION
 // =============================================
-// STEP 1: Paste your Google Apps Script Web App URL below
 var SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
 
 function saveToSheets(){
@@ -949,7 +883,6 @@ function saveToSheets(){
   var phpRate = +document.getElementById('usd_php_rate').value || 60;
   var isLR    = direction === 'Left → Right';
 
-  // Cuttings
   var sideframe  = w && h ? (h - 15).toFixed(2) : '—';
   var pullrod    = w && h ? (h - 78).toFixed(2) : '—';
   var upperrail  = w && h ? (w - 32).toFixed(2) : '—';
@@ -957,17 +890,22 @@ function saveToSheets(){
   var meshLen    = w && h ? (h - 86).toFixed(2) : '—';
   var pullRodQty = mode === 'twoway' ? 2 : 1;
 
-  // Mesh counts
-  var n8 = +(mode==='oneway' ? document.getElementById('mesh_8cm').textContent : document.getElementById('mesh_8cm_total').textContent) || 0;
-  var n6 = +(mode==='oneway' ? document.getElementById('mesh_6cm').textContent : document.getElementById('mesh_6cm_total').textContent) || 0;
-  var n4 = +(mode==='oneway' ? document.getElementById('mesh_4cm').textContent : document.getElementById('mesh_4cm_total').textContent) || 0;
+  // ── FIXED: use .value for oneway input fields ──
+  var n8, n6, n4;
+  if(mode === 'oneway'){
+    n8 = +document.getElementById('mesh_8cm').value || 0;
+    n6 = +document.getElementById('mesh_6cm').value || 0;
+    n4 = +document.getElementById('mesh_4cm').value || 0;
+  } else {
+    n8 = +document.getElementById('mesh_8cm_total').textContent || 0;
+    n6 = +document.getElementById('mesh_6cm_total').textContent || 0;
+    n4 = +document.getElementById('mesh_4cm_total').textContent || 0;
+  }
   var totalMesh = n8 + n6 + n4;
 
-  // Mesh stock
   var meshLenMm  = h - 86;
   var meshStockM = meshLenMm <= 2300 ? 2.3 : meshLenMm <= 2500 ? 2.5 : 3.0;
 
-  // Adjusters
   var adj     = window._lastAdj || {};
   var adjMult = window._lastAdjMultiplier || 1;
   var wl1019  = (adj.wl1019 || 0) * adjMult;
@@ -975,7 +913,6 @@ function saveToSheets(){
   var wl0816  = (adj.wl0816 || 0) * adjMult;
   var wl1417  = (adj.wl1417 || 0) * adjMult;
 
-  // Part quantities
   var qCornerSF  = 2;
   var qCornerDR  = 2;
   var qPullUL    = (mode==='oneway' && isLR)  ? 1 : 0;
@@ -995,30 +932,22 @@ function saveToSheets(){
   var qLock      = 1;
   var qMaskLock  = mode === 'twoway' ? 1 : 0;
 
-  // Cost totals
   var usd = window._lastGrandTotalUSD ? window._lastGrandTotalUSD.toFixed(2) : '—';
   var php = window._lastGrandTotalPHP ? window._lastGrandTotalPHP.toFixed(2) : '—';
 
-  // Timestamp (Manila)
   var ts = new Date().toLocaleString('en-PH', {timeZone:'Asia/Manila'});
 
   var headers = [
     'Timestamp','Client','Branch','Mode','Direction','Width (mm)','Height (mm)',
-    // Aluminum cuttings
     'Side Frame (mm) ×2','Pull Rod (mm)','Pull Rod Qty','Upper Rail (mm)','Bottom Rail (mm)','Mesh Length (mm)',
-    // Mesh plan
     'Mesh Stock (m)','Mesh 8cm pcs','Mesh 6cm pcs','Mesh 4cm pcs',
-    // Security parts quantities
     'Corner Side Frame ×','Corner Door Rail ×','Pull Rod Upper L ×','Pull Rod Upper R ×',
     'Pull Rod Bot L ×','Pull Rod Bot R ×','Connecting Rod ×','Bottom M Rod ×',
     'M Rod Fixture ×','T-Bar Plug ×','Clip 8cm ×','Clip 6cm ×','Clip 4cm ×',
     'Pin ×','Screw ×','Hook Lock ×','Lock ×','Mask Lock ×',
-    // Adjusters
     'WL1019 ×','WL1316 ×','WL0816 ×','WL1417 ×',
-    // Cost & Pricing
     'Cost USD','PHP Rate','Cost PHP',
     'Selling Price PHP','Profit PHP',
-    // Other
     'Powdercoat','Notes'
   ];
 
@@ -1058,23 +987,18 @@ function saveToSheets(){
   btn.disabled = true;
   btn.textContent = '⏳ Saving…';
 
-  // Build deductions list for inventory
   var deductions = [
-    // Aluminum profiles (in meters)
     {key:'WL4016 Side Frame',  qty: 2 * (h-15)/1000 },
     {key:'WL3418 Pull Rod',    qty: pullRodQty * (h-78)/1000 },
     {key:'WL4026 Upper Rail',  qty: (w-32)/1000 },
     {key:'WL4013 Bottom Rail', qty: (w-32)/1000 },
-    // Mesh sheets (pieces × stock length in meters)
     {key:'Mesh 8cm Sheet',     qty: n8 * meshStockM },
     {key:'Mesh 6cm Sheet',     qty: n6 * meshStockM },
     {key:'Mesh 4cm Sheet',     qty: n4 * meshStockM },
-    // Adjusters
     {key:'WL1019',             qty: wl1019 },
     {key:'WL1316 10mm',        qty: wl1316 },
     {key:'WL0816 5mm',         qty: wl0816 },
     {key:'WL1417 3mm',         qty: wl1417 },
-    // Security parts
     {key:'Corner Side Frame',  qty: qCornerSF },
     {key:'Corner Door Rail',   qty: qCornerDR },
     {key:'Pull Rod Upper L',   qty: qPullUL },
@@ -1095,7 +1019,7 @@ function saveToSheets(){
     {key:'Mask Lock (2way)',   qty: qMaskLock },
     {key:'Magnetic Strip',     qty: h/1000 },
     {key:'Weather Strip',      qty: h/1000 }
-  ].filter(d => d.qty > 0); // only send items actually used
+  ].filter(d => d.qty > 0);
 
   fetch(SHEETS_SCRIPT_URL, {
     method: 'POST',
