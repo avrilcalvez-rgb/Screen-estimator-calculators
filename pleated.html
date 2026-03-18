@@ -118,6 +118,7 @@ th{color:var(--muted);background:#0B1322}
   <h1>📐 Pleated Screen — Calculator (v10)</h1>
   <div class="hdr-btns no-print">
     <button onclick="openStockModal()" style="background:#0c2340;color:#7dd3fc;border-color:#1e3a5f">📦 Stock List</button>
+    <button id="save_btn" onclick="saveToSheets()" style="background:#166534;color:white;border:1px solid #166534;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">💾 Save to Sheets</button>
     <button onclick="window.print()">🖨 Print</button>
   </div>
 </header>
@@ -749,6 +750,109 @@ document.addEventListener('DOMContentLoaded', function(){
 
 document.getElementById('powder_code').addEventListener('input',function(){setPowderHighlight(!!(this.value||'').trim());});
 document.getElementById('notes').addEventListener('input',function(){setNotesHighlight(!!(this.value||'').trim());});
+
+// ── SAVE TO GOOGLE SHEETS ─────────────────────────────────────────────────────
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
+
+async function saveToSheets() {
+  var w = +document.getElementById('width_mm').value  || 0;
+  var h = +document.getElementById('height_mm').value || 0;
+  if (!w || !h) { alert('Please enter Width and Height first.'); return; }
+
+  var btn = document.getElementById('save_btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving…';
+
+  var dir       = document.getElementById('direction').value;
+  var isTwoWay  = (dir === 'Two Way');
+  var isRepair  = (document.getElementById('replacement').value === 'repair');
+
+  // Cutting formulas — exact same as compute()
+  var cut_side   = h - 51;    // X023 ×2
+  var cut_top    = w - 51;    // X022 ×1
+  var cut_bottom = w - 51;    // X023 ×1
+  var cut_inner  = h - 40;    // X024 ×2
+  var cut_middle = h - 100;   // X025 ×1 (1way) or ×2 (2way)
+  var cut_pvc    = h - 40;    // PVC ×2 (1way) or ×4 (2way)
+  var mesh_h     = h - 40;
+  var mesh_fold  = Math.round(w / 20);
+  var middle_qty = isTwoWay ? 2 : 1;
+  var pvc_qty    = isTwoWay ? 4 : 2;
+
+  // ── INVENTORY DEDUCTIONS ────────────────────────────────────────────────
+  var deductions = [];
+  if (!isRepair) {
+    // Aluminum — fraction of 5.8m bar used
+    deductions.push({ key: 'X023 Outer Frame',    qty: (2*cut_side + cut_bottom) / 5800 });
+    deductions.push({ key: 'X022 Top Profile',    qty: cut_top / 5800 });
+    deductions.push({ key: 'X024 Inner Frame',    qty: (2 * cut_inner) / 5800 });
+    deductions.push({ key: 'X025 Middle Profile', qty: (middle_qty * cut_middle) / 5800 });
+    // PVC strip pieces
+    deductions.push({ key: 'PVC Strip',           qty: pvc_qty });
+    // Double sided tape — meters used / 50m per roll
+    deductions.push({ key: 'Double Sided Tape Roll', qty: (pvc_qty * cut_pvc / 1000) / 50 });
+    // Pleated screen fabric — sqft used / sqft per roll (3m × 30m × 10.764 sqft/sqm)
+    var sqft = (w / 304.8) * (h / 304.8);
+    var billSqft = Math.max(sqft, 15);
+    var fabricPerRoll = 3.0 * 30.0 * 10.764;
+    deductions.push({ key: 'Pleated Screen Roll', qty: (isTwoWay ? billSqft * 2 : billSqft) / fabricPerRoll });
+    // Accessories set — 1 per job
+    deductions.push({ key: 'HC Accessories Set',  qty: 1 });
+    // Rope — estimated meters used / 1600m per roll
+    var rope_sizes = h <= 1000 ? 4 : h <= 2000 ? 6 : 8;
+    var rope_m = (rope_sizes / 2) * ((h - 35) / 1000) * 2;
+    deductions.push({ key: 'Rope String Roll',    qty: rope_m / 1600 });
+  }
+
+  var payload = {
+    sheet:          'Pleated',
+    timestamp:      new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' }),
+    mode:           isTwoWay ? 'Two Way' : 'One Way',
+    client:         document.getElementById('client').value.trim() || '—',
+    branch:         document.getElementById('branch').value,
+    job_type:       isRepair ? 'Repair' : 'New',
+    width_mm:       w,
+    height_mm:      h,
+    mesh_color:     document.getElementById('mesh_color').value,
+    acc_color:      document.getElementById('acc_color').value || '',
+    powdercoat:     document.getElementById('powder_code').value.trim() || '',
+    notes:          document.getElementById('notes').value.trim() || '',
+    cut_side_frame: cut_side,
+    cut_top,
+    cut_bottom,
+    cut_inner,
+    cut_middle,
+    cut_pvc,
+    mesh_h,
+    mesh_fold,
+    total_rmb:      0,
+    total_php:      0,
+    sell_php:       0,
+    markup_pct:     0,
+    deductions,
+  };
+
+  try {
+    await fetch(SHEETS_URL, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    btn.textContent      = '✅ Saved!';
+    btn.style.background = '#052e16';
+    setTimeout(function() {
+      btn.textContent      = '💾 Save to Sheets';
+      btn.style.background = '#166534';
+      btn.disabled         = false;
+    }, 2500);
+  } catch(err) {
+    alert('Save failed: ' + err.message);
+    btn.disabled    = false;
+    btn.textContent = '💾 Save to Sheets';
+  }
+}
+
 </script>
 </body>
 </html>
