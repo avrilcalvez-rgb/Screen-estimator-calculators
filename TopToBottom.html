@@ -175,33 +175,12 @@
     if(on){ inp.classList.add('note-on'); if(row) row.classList.add('note-row-on'); out.className='mono note-badge'; }
     else { inp.classList.remove('note-on'); if(row) row.classList.remove('note-row-on'); out.className='mono'; }
   }
-  
-function getRepair(){
-  try{
-    var list = document.querySelectorAll('select[id="job_type"], select[id="replacement"]');
-    if (!list || !list.length) return false;
-    for (var i=0;i<list.length;i++){
-      var v = (list[i].value||'').toLowerCase();
-      if (v === 'repair' || v === 'yes') return true;
-    }
-    return false;
-  }catch(e){ return false; }
-}
 
-function compute(){
+  function compute(){
     const w=+$('wmm').value||0, h=+$('hmm').value||0;
     const acc = $('acc_color') ? $('acc_color').value : '';
     const job = ($('job_type') && $('job_type').value) || 'new';
-    
-    // Robust repair detection across duplicate selects
     let repl = (job === 'repair');
-    try {
-      const jobs = Array.from(document.querySelectorAll('select[id="job_type"]'));
-      if (jobs.length) {
-        repl = jobs.some(el => (el.value||'').toLowerCase() === 'repair');
-      }
-    } catch(e) { /* fallback to existing 'repl' */ }
-    
     const notes = ($('notes') && $('notes').value || '').trim();
     $('o_color').textContent=$('mesh_color').value;
     $('o_acc').textContent = acc || '—';
@@ -214,16 +193,11 @@ function compute(){
     $('o_size').textContent=`${w} × ${h}`;
     $('o_status').textContent=$('status').value;
     $('o_client').textContent=$('client').value||'—';
-
     $('itm_cass').textContent=$('code_cassette').value;
     $('itm_round').textContent=$('code_round').value;
     $('itm_draw').textContent=$('code_draw').value;
     $('itm_siderail').textContent=$('code_siderail').value;
-
-    const ct = $('cuttings_table'); if (ct) ct.style.display = repl ? 'none' : '';
-    const ch = $('cuttings_header'); if (ch) ch.style.display = repl ? 'none' : '';
     const cb = $('cuttings_block'); if (cb) cb.style.display = repl ? 'none' : '';
-
     if(!(w>0&&h>0)){ ['len_cass','len_round','len_draw','len_siderail','meshH','meshW'].forEach(id=>$(id).textContent='—'); return; }
     const ded_cass=+$('ded_cass').value||0, ded_round=+$('ded_round').value||0, ded_draw=+$('ded_draw').value||0, ded_siderail=+$('ded_siderail').value||0, meshH_add=+$('meshH_add').value||0, meshW_ded=+$('meshW_ded').value||0;
     $('len_cass').textContent=w-ded_cass;
@@ -235,131 +209,45 @@ function compute(){
   }
 
   const ids=['wmm','hmm','mesh_color','powder','client','branch','status','code_cassette','code_round','code_draw','code_siderail','ded_cass','ded_round','ded_draw','ded_siderail','meshH_add','meshW_ded','acc_color','job_type','notes'];
-  ids.forEach(id=>{ const el=$(id); const evt=(el.tagName==='SELECT')?'change':'input'; el.addEventListener(evt, compute); });
+  ids.forEach(id=>{ const el=$(id); if(!el) return; const evt=(el.tagName==='SELECT')?'change':'input'; el.addEventListener(evt, compute); });
   window.addEventListener('DOMContentLoaded', compute);
 
-  // NOTES-HOT-BIND: trigger compute & highlight on typing
-  (function(){
-    var n = document.getElementById('notes');
-    if(!n) return;
-    n.addEventListener('input', compute);
-  })();
-
-  // JOBTYPE-HOT-BIND
-  (function(){
-    var j=document.getElementById('job_type');
-    if(!j) return;
-    j.addEventListener('change', compute);
-  })();
-
-  // JOBTYPE-HOT-BIND (all duplicates)
-  (function(){
-    var list = document.querySelectorAll('select[id="job_type"]');
-    list.forEach(function(el){ el.addEventListener('change', compute); });
-  })();
-
-
-  // ACC-COLOR-HOT-BIND (handles duplicate selects)
-  (function(){
-    var list = document.querySelectorAll('select[id="acc_color"]');
-    list.forEach(function(el){ el.addEventListener('change', compute); });
-  })();
-
-
-  // JOBTYPE-HOT-BIND (ensure compute on change for any duplicates)
-  (function(){
-    var list = document.querySelectorAll('select[id="job_type"]');
-    list.forEach(function(el){ el.addEventListener('change', compute); });
-  })();
-
-
-  // SYNC & HOT-BIND: accessories color (all duplicates)
-  (function(){
-    var list = document.querySelectorAll('select[id="acc_color"]');
-    list.forEach(function(el){
-      el.addEventListener('change', function(e){
-        var v = e.target.value;
-        list.forEach(function(other){ if(other!==el) other.value = v; });
-        compute();
-      });
-    });
-  })();
-
-  // SYNC & HOT-BIND: job type (all duplicates)
-  (function(){
-    var list = document.querySelectorAll('select[id="job_type"]');
-    list.forEach(function(el){
-      el.addEventListener('change', function(e){
-        var v = e.target.value;
-        list.forEach(function(other){ if(other!==el) other.value = v; });
-        compute();
-      });
-    });
-  })();
-
-
-  // LIVE BINDERS (reinforce)
-  (function(){
-    var accs = document.querySelectorAll('select[id="acc_color"]');
-    accs.forEach(function(el){
-      el.addEventListener('change', function(e){
-        var v=e.target.value; accs.forEach(function(o){ if(o!==el) o.value=v; }); compute();
-      });
-    });
-    var jobs = document.querySelectorAll('select[id="job_type"], select[id="replacement"]');
-    jobs.forEach(function(el){
-      el.addEventListener('change', function(e){
-        var v=e.target.value; jobs.forEach(function(o){ if(o!==el) o.value=v; }); compute();
-      });
-    });
-  })();
-
-
   // ── SAVE TO GOOGLE SHEETS ────────────────────────────────────────────────
-  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
+  var SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
 
-  async function saveToSheets() {
-    const w   = +document.getElementById('wmm').value || 0;
-    const h   = +document.getElementById('hmm').value || 0;
+  function saveToSheets() {
+    var w = +document.getElementById('wmm').value || 0;
+    var h = +document.getElementById('hmm').value || 0;
     if (!w || !h) { alert('Please enter Width and Height first.'); return; }
 
-    const btn = document.getElementById('save_btn');
+    var btn = document.getElementById('save_btn');
     btn.disabled = true;
     btn.textContent = '⏳ Saving…';
 
-    const ded_cass    = +document.getElementById('ded_cass').value    || 16;
-    const ded_round   = +document.getElementById('ded_round').value   || 14;
-    const ded_draw    = +document.getElementById('ded_draw').value    || 15;
-    const ded_siderail= +document.getElementById('ded_siderail').value|| 48;
-    const meshH_add   = +document.getElementById('meshH_add').value   || 50;
-    const meshW_ded   = +document.getElementById('meshW_ded').value   || 14;
+    var ded_cass     = +document.getElementById('ded_cass').value     || 16;
+    var ded_round    = +document.getElementById('ded_round').value    || 14;
+    var ded_draw     = +document.getElementById('ded_draw').value     || 15;
+    var ded_siderail = +document.getElementById('ded_siderail').value || 48;
+    var meshH_add    = +document.getElementById('meshH_add').value    || 50;
+    var meshW_ded    = +document.getElementById('meshW_ded').value    || 14;
 
-    const cut_cass     = w - ded_cass;
-    const cut_round    = w - ded_round;
-    const cut_draw     = w - ded_draw;
-    const cut_siderail = h - ded_siderail;
-    const mesh_h       = h + meshH_add;
-    const mesh_w       = w - meshW_ded;
-    const job_type     = document.getElementById('job_type').value || 'new';
-    const isRepair     = job_type.toLowerCase() === 'repair';
+    var cut_cass     = w - ded_cass;
+    var cut_round    = w - ded_round;
+    var cut_draw     = w - ded_draw;
+    var cut_siderail = h - ded_siderail;
+    var mesh_h       = h + meshH_add;
+    var mesh_w       = w - meshW_ded;
+    var job_type     = document.getElementById('job_type').value || 'new';
+    var isRepair     = job_type.toLowerCase() === 'repair';
+    var ts           = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
 
-    // ── INVENTORY DEDUCTIONS ──────────────────────────────────────────────
-    // Aluminum: bars used = cut length (mm) / 5800mm per bar
-    // For repair jobs, skip aluminum deductions
-    const deductions = [];
-
+    var deductions = [];
     if (!isRepair) {
-      // YO88A Cassette x1
-      deductions.push({ key: 'YO88A Cassette',       qty: cut_cass / 5800 });
-      // YO57 Round tube x1
-      deductions.push({ key: 'YO57 Round Tube+Mesh', qty: cut_round / 5800 });
-      // YO33A Drawing bar x1
-      deductions.push({ key: 'YO33A Drawing Bar',    qty: cut_draw / 5800 });
-      // YO70 Side rail x2
-      deductions.push({ key: 'YO70 Side Rail',       qty: (cut_siderail * 2) / 5800 });
-      // Double sided tape (h in meters)
+      deductions.push({ key: 'YO88A Cassette',         qty: cut_cass / 5800 });
+      deductions.push({ key: 'YO57 Round Tube+Mesh',   qty: cut_round / 5800 });
+      deductions.push({ key: 'YO33A Drawing Bar',      qty: cut_draw / 5800 });
+      deductions.push({ key: 'YO70 Side Rail',         qty: (cut_siderail * 2) / 5800 });
       deductions.push({ key: 'Double Sided Tape Roll', qty: h / 1000 / 50 });
-      // TTB Parts (all fixed qty per unit)
       deductions.push({ key: 'TTB Outer Frame Corner', qty: 2 });
       deductions.push({ key: 'TTB Spring',             qty: 1 });
       deductions.push({ key: 'TTB Cushion',            qty: 1 });
@@ -373,53 +261,56 @@ function compute(){
       deductions.push({ key: 'TTB Complete Accs Set',  qty: 1 });
     }
 
-    const payload = {
-      sheet:       'TopToBottom',
-      timestamp:   new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' }),
-      client:      document.getElementById('client').value.trim() || '—',
-      branch:      document.getElementById('branch').value,
-      status:      document.getElementById('status').value,
-      job_type,
-      width_mm:    w,
-      height_mm:   h,
-      mesh_color:  document.getElementById('mesh_color').value,
-      acc_color:   (document.getElementById('acc_color') ? document.getElementById('acc_color').value : ''),
-      powdercoat:  document.getElementById('powder').value.trim() || '',
-      notes:       document.getElementById('notes').value.trim() || '',
-      cut_cassette: cut_cass,
-      cut_round:    cut_round,
-      cut_draw:     cut_draw,
-      cut_siderail: cut_siderail,
-      mesh_h,
-      mesh_w,
-      total_rmb:   0,
-      total_php:   0,
-      sell_php:    0,
-      markup_pct:  0,
-      deductions,
-    };
+    var headers = [
+      'Timestamp','Client','Branch','Status','Job Type',
+      'Width (mm)','Height (mm)',
+      'Mesh Color','Accessories Color','Powdercoat','Notes',
+      'Cut Cassette (mm)','Cut Round Tube (mm)','Cut Drawing Bar (mm)','Cut Side Rail (mm)',
+      'Mesh H','Mesh W',
+      'Total Cost (RMB)','Total Cost (PHP)','Selling Price (PHP)','Markup %'
+    ];
 
-    try {
-      await fetch(SHEETS_URL, {
-        method: 'POST',
-        mode:   'no-cors',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body:    new URLSearchParams({ payload: JSON.stringify(payload) }),
-      });
+    var row = [
+      ts, document.getElementById('client').value.trim() || '—',
+      document.getElementById('branch').value,
+      document.getElementById('status').value,
+      job_type, w, h,
+      document.getElementById('mesh_color').value,
+      document.getElementById('acc_color') ? document.getElementById('acc_color').value : '',
+      document.getElementById('powder').value.trim() || '',
+      document.getElementById('notes').value.trim() || '',
+      cut_cass, cut_round, cut_draw, cut_siderail,
+      mesh_h, mesh_w, 0, 0, 0, 0
+    ];
+
+    fetch(SHEETS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'append_row_v2',
+        tab: 'TopToBottom',
+        headers: headers,
+        priceRow: [],
+        row: row,
+        deductions: deductions,
+        productLine: 'TopToBottom'
+      })
+    }).then(function() {
+      btn.disabled = false;
       btn.textContent = '✅ Saved!';
       btn.style.background = '#166534';
       btn.style.color = '#fff';
-      setTimeout(() => {
+      setTimeout(function() {
         btn.textContent = '💾 Save to Google Sheets';
         btn.style.background = '';
         btn.style.color = '';
-        btn.disabled = false;
-      }, 2500);
-    } catch(err) {
-      alert('Save failed: ' + err.message);
+      }, 3000);
+    }).catch(function() {
       btn.disabled = false;
       btn.textContent = '💾 Save to Google Sheets';
-    }
+      alert('Save failed. Check internet connection.');
+    });
   }
 
 </script>
