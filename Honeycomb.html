@@ -206,6 +206,9 @@
               <td><strong>→ Use Roll Height</strong></td>
               <td class="right mono" id="hc_roll_rec" style="font-weight:700;font-size:14px">—</td>
             </tr>
+            <tr id="remnant_row" style="display:none;background:rgba(186,117,23,0.10)">
+              <td colspan="2" id="remnant_msg" style="font-size:12px;padding:6px 8px;font-weight:500"></td>
+            </tr>
               <tr><td>Honeycomb Fold - <span id="hc_pcs">1PCS</span></td><td class="right mono" id="hc_fold_out">—</td></tr>
             </tbody>
           </table>
@@ -335,6 +338,8 @@
       rollEl.textContent = rollRec;
       rollEl.style.color = rollRec === '2.4m' ? '#1D9E75' : '#BA7517';
     }
+    // Check for remnants when height and color are set
+    if(w > 0 && h > 0) checkRemnants(hcColorVal, hcHeight, hcFold * pcs);
 
     // Holes (Pleated)
     const meshHforHoles = h - meshDed;
@@ -500,6 +505,78 @@ function saveToSheets() {
     btn.disabled = false;
     btn.textContent = '💾 Save to Google Sheets';
     alert('Save failed. Check internet connection.');
+  });
+}
+
+
+// ── REMNANT CHECKING ─────────────────────────────────────────────────────────
+var SHEETS_URL_REMNANT = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
+var _lastRemnant = null;
+
+function checkRemnants(color, height, folds) {
+  var row = document.getElementById('remnant_row');
+  var msg = document.getElementById('remnant_msg');
+  if(!row || !msg) return;
+
+  // Map color value to product type
+  var product = 'Honeycomb';
+
+  var url = SHEETS_URL_REMNANT +
+    '?action=getRemnants' +
+    '&product=' + encodeURIComponent(product) +
+    '&color='   + encodeURIComponent(color) +
+    '&height='  + height +
+    '&folds='   + folds;
+
+  fetch(url)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(!data || data.status !== 'ok') return;
+
+      if(data.matches && data.matches.length > 0) {
+        var best = data.matches[0];
+        row.style.display = '';
+        row.style.background = 'rgba(29,158,117,0.12)';
+        msg.style.color = '#0F6E56';
+        msg.innerHTML = '&#10003; Remnant available! <strong>' + best.box + '</strong> — ' +
+          best.color + ' | Height: ' + best.height + 'mm | Folds: ' + best.folds +
+          ' <button onclick="useRemnant('' + best.box + '','' + best.product + '','' + best.color + '')" ' +
+          'style="margin-left:8px;padding:2px 10px;background:#166534;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer">Use this</button>';
+        _lastRemnant = best;
+      } else if(data.nearMatches && data.nearMatches.length > 0) {
+        var opts = data.nearMatches.map(function(m){
+          return '<strong>' + m.box + '</strong> (' + m.color + ' | ' + m.height + 'mm | ' + m.folds + ' folds)';
+        }).join(', ');
+        row.style.display = '';
+        row.style.background = 'rgba(186,117,23,0.10)';
+        msg.style.color = '#854F0B';
+        msg.innerHTML = '&#9888; No exact match. Nearest options: ' + opts;
+        _lastRemnant = null;
+      } else {
+        row.style.display = '';
+        row.style.background = 'rgba(0,0,0,0.03)';
+        msg.style.color = '#888888';
+        msg.innerHTML = 'No remnants available — use new roll.';
+        _lastRemnant = null;
+      }
+    })
+    .catch(function(){
+      row.style.display = 'none';
+    });
+}
+
+function useRemnant(box, product, color) {
+  if(!confirm('Mark ' + box + ' (' + color + ') as Used?')) return;
+  fetch(SHEETS_URL_REMNANT, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'useRemnant', box: box, product: product, color: color })
+  }).then(function(){
+    var msg = document.getElementById('remnant_msg');
+    if(msg) msg.innerHTML = '&#10003; ' + box + ' marked as Used.';
+    var row = document.getElementById('remnant_row');
+    if(row) row.style.background = 'rgba(0,0,0,0.03)';
   });
 }
 
