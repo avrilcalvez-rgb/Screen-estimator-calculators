@@ -201,13 +201,8 @@
             <thead><tr><th>Item</th><th class="right">Value</th></tr></thead>
             <tbody>
               <tr><td>Honeycomb Height</td><td class="right mono" id="hc_height_out">—</td></tr>
-            <tr style="background:rgba(29,158,117,0.08)">
-              <td><strong>→ Use Roll Height</strong></td>
-              <td class="right mono" id="hc_roll_rec" style="font-weight:700;font-size:14px">—</td>
-            </tr>
-            <tr id="remnant_row" style="display:none">
-              <td colspan="2" id="remnant_msg" style="font-size:12px;padding:6px 8px;font-weight:500"></td>
-            </tr>
+            <tr style="background:rgba(29,158,117,0.08)"><td><strong>→ Use Roll Height</strong></td><td class="right mono" id="hc_roll_rec" style="font-weight:700;font-size:14px">—</td></tr>
+            <tr id="remnant_row" style="display:none"><td colspan="2" id="remnant_msg" style="font-size:12px;padding:6px 8px;font-weight:500"></td></tr>
               <tr><td>Honeycomb Fold - <span id="hc_pcs">1PCS</span></td><td class="right mono" id="hc_fold_out">—</td></tr>
             </tbody>
           </table>
@@ -325,15 +320,11 @@
     $('hc_height_out').textContent = hcHeight;
     $('hc_pcs').textContent = (pcs === 1 ? '1PCS' : '2PCS');
     $('hc_fold_out').textContent = hcFold;
-
-    // Auto roll height — only Choco Cindy & Light Brown have 2.4m
     var hcColorVal = $('hc_color').value;
     var has24m = (hcColorVal === 'HC Choco Cindy 2013' || hcColorVal === 'HC Light Brown 2013');
     var rollRec = (has24m && hcHeight <= 2400) ? '2.4m' : '3m';
     var rollEl = $('hc_roll_rec');
-    if(rollEl){ rollEl.textContent = rollRec; rollEl.style.color = rollRec === '2.4m' ? '#1D9E75' : '#BA7517'; }
-
-    // Check remnants
+    if(rollEl){ rollEl.textContent = rollRec; rollEl.style.color = rollRec==='2.4m'?'#1D9E75':'#BA7517'; }
     if(w > 0 && h > 0) checkRemnants('Honeycomb', hcColorVal, hcHeight, hcFold * pcs);
 
     // Holes (Pleated)
@@ -382,239 +373,152 @@
   });
 
   window.addEventListener('DOMContentLoaded', compute);
-
-  // ── SAVE TO GOOGLE SHEETS ──────────────────────────────────────────────────
-  var SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
-
-  function saveToSheets() {
-    var w = +document.getElementById('wmm').value || 0;
-    var h = +document.getElementById('hmm').value || 0;
-    if (!w || !h) { alert('Please enter Width and Height first.'); return; }
-
-    var btn = document.getElementById('save_btn');
-    btn.disabled = true;
-    btn.textContent = '⏳ Saving…';
-
-    var mode        = document.getElementById('mode').value;
-    var isRepair    = document.getElementById('replacement') ? document.getElementById('replacement').value === 'yes' : false;
-    var hcFoldDiv   = +document.getElementById('hc_fold_div').value || 7.5;
-    var meshFoldDiv = +document.getElementById('mesh_fold_div').value || 20;
-    var hcDed       = +document.getElementById('hc_ded').value || 35;
-    var meshDed     = +document.getElementById('mesh_ded').value || 40;
-    var pcs         = (mode === 'honeycomb2') ? 2 : 1;
-    var hcHeight    = h - hcDed;
-    var baseFold    = Math.round(w / hcFoldDiv);
-    var hcFold      = Math.round(baseFold / pcs);
-    var ts          = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
-
-    var hcColorBase = document.getElementById('hc_color').value;
-    var has24m      = (hcColorBase === 'HC Choco Cindy 2013' || hcColorBase === 'HC Light Brown 2013');
-    var rollHeight  = (has24m && hcHeight <= 2400) ? '2.4m' : '3m';
-    var hcColorKey  = hcColorBase + ' ' + rollHeight;
-
-    var cut_side   = h - 51;
-    var cut_top    = w - 51;
-    var cut_bottom = w - 51;
-    var cut_inner  = h - meshDed;
-    var cut_middle = h - 100;
-    var cut_pvc    = h - meshDed;
-    var middle_qty = (mode === 'honeycomb1') ? 1 : 2;
-    var pvc_qty    = (mode === 'honeycomb1') ? 2 : 4;
-
-    var deductions = [];
-    if (!isRepair) {
-      deductions.push({ key: 'X023 Side Frame',       qty: (2*cut_side + cut_bottom) / 5800 });
-      deductions.push({ key: 'X022 Top Rail',          qty: cut_top / 5800 });
-      deductions.push({ key: 'X024 Inner Side Frame',  qty: (2 * cut_inner) / 5800 });
-      deductions.push({ key: 'X025 Pull Rod',          qty: (middle_qty * cut_middle) / 5800 });
-      deductions.push({ key: 'PVC Strip',              qty: pvc_qty });
-      deductions.push({ key: 'Double Sided Tape Roll', qty: (pvc_qty * cut_pvc / 1000) / 50 });
-      var hc_folds_total = hcFold * pcs;
-      deductions.push({ key: hcColorKey,               qty: hc_folds_total / 1330 });
-      var rope_sizes = h <= 1000 ? 4 : h <= 2000 ? 6 : 8;
-      deductions.push({ key: 'Rope Black 1600m/roll',  qty: (rope_sizes/2) * ((h-35)/1000) * 2 / 1600 });
-    }
-
-    var headers = ['Timestamp','Mode','Client','Branch','Replacement','Width (mm)','Height (mm)','HC Color','HC Roll Height','Mesh Color','Accessories Color','Powdercoat','Notes','HC Height','HC Fold','Cut Side Frame (mm)','Cut Top (mm)','Cut Bottom (mm)','Cut Inner Frame (mm)','Cut Middle (mm)','Cut PVC (mm)','Total Cost (RMB)','Total Cost (PHP)','Selling Price (PHP)','Markup %'];
-    var modeLabel   = mode === 'honeycomb1' ? 'One Way' : mode === 'honeycomb2' ? 'Two Way' : 'Combo';
-    var meshColorEl = document.getElementById('meshcolor');
-    var accColorEl  = document.getElementById('acc_color');
-
-    var row = [ts, modeLabel, document.getElementById('client').value.trim() || '—', document.getElementById('branch').value, isRepair ? 'Yes' : 'No', w, h, hcColorBase, rollHeight, meshColorEl ? meshColorEl.value : '', accColorEl ? accColorEl.value : '', document.getElementById('powder').value.trim() || '', document.getElementById('notes').value.trim() || '', hcHeight, hcFold, cut_side, cut_top, cut_bottom, cut_inner, cut_middle, cut_pvc, 0, 0, 0, 0];
-
-    fetch(SHEETS_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'append_row_v2', tab: 'Honeycomb', headers: headers, priceRow: [], row: row, deductions: deductions, productLine: 'Honeycomb' })
-    }).then(function() {
-      btn.disabled = false;
-      btn.textContent = '✅ Saved!';
-      btn.style.background = '#166534';
-      btn.style.color = '#fff';
-      setTimeout(function() { btn.textContent = '💾 Save to Google Sheets'; btn.style.background = ''; btn.style.color = ''; }, 3000);
-    }).catch(function() {
-      btn.disabled = false;
-      btn.textContent = '💾 Save to Google Sheets';
-      alert('Save failed. Check internet connection.');
-    });
-  }
-
-  // ── REMNANT CHECKING ───────────────────────────────────────────────────────
-  function checkRemnants(product, color, height, folds) {
-    var row = document.getElementById('remnant_row');
-    var msg = document.getElementById('remnant_msg');
-    if(!row || !msg || !height || !folds) return;
-    var url = SHEETS_SCRIPT_URL + '?action=getRemnants&product=' + encodeURIComponent(product) + '&color=' + encodeURIComponent(color) + '&height=' + height + '&folds=' + folds;
-    fetch(url).then(function(r){ return r.json(); }).then(function(data){
-      if(!data || data.status !== 'ok') return;
-      if(data.matches && data.matches.length > 0) {
-        var best = data.matches[0];
-        row.style.display = '';
-        row.style.background = 'rgba(29,158,117,0.12)';
-        msg.style.color = '#0F6E56';
-        msg.innerHTML = '&#10003; Remnant available! <strong>' + best.box + '</strong> — ' + best.color + ' | Height: ' + best.height + 'mm | Folds: ' + best.folds + ' <button onclick="useRemnant('' + best.box + '','' + best.product + '','' + best.color + '')" style="margin-left:8px;padding:2px 10px;background:#166534;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer">Use this</button>';
-      } else if(data.nearMatches && data.nearMatches.length > 0) {
-        var opts = data.nearMatches.map(function(m){ return '<strong>' + m.box + '</strong> (' + m.height + 'mm | ' + m.folds + ' folds)'; }).join(', ');
-        row.style.display = '';
-        row.style.background = 'rgba(186,117,23,0.10)';
-        msg.style.color = '#854F0B';
-        msg.innerHTML = '&#9888; No exact match. Nearest: ' + opts;
-      } else {
-        row.style.display = '';
-        row.style.background = 'rgba(0,0,0,0.03)';
-        msg.style.color = '#888888';
-        msg.innerHTML = 'No remnants available — use new roll.';
-      }
-    }).catch(function(){ if(row) row.style.display='none'; });
-  }
-
-  function useRemnant(box, product, color) {
-    if(!confirm('Mark ' + box + ' (' + color + ') as Used?')) return;
-    fetch(SHEETS_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'useRemnant', box: box, product: product, color: color })
-    }).then(function(){
-      var msg = document.getElementById('remnant_msg');
-      if(msg) msg.innerHTML = '&#10003; ' + box + ' marked as Used.';
-    });
-  }
-
 </script>
 
 
 <!-- Save to Inventory Button (added) -->
-
-
-
-
-
-<div style="margin-top:12px;text-align:center">
-  <button id="save_btn" onclick="saveToSheets()" style="background:#166534;color:white;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">💾 Save to Google Sheets</button>
+<div class="card no-print" style="margin-top:12px;text-align:center">
+  <button id="save_btn" onclick="saveToSheets()" style="background:#166534;color:white;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-right:8px">💾 Save to Google Sheets</button>
 </div>
 
 <script>
-var SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
+/**
+ * Save to Inventory (keeps your existing HOLD DISTANCES UI as-is)
+ * Replace ENDPOINT with your Apps Script Web App URL
+ * Example: const ENDPOINT = 'https://script.google.com/macros/s/XXXX/exec?action=reserve';
+ */
+const ENDPOINT = 'PASTE_YOUR_WEB_APP_URL_HERE?action=reserve';
+
+async function saveToInventory(){
+  if (!ENDPOINT || ENDPOINT.indexOf('PASTE_YOUR_WEB_APP_URL_HERE') !== -1){
+    alert('Please set your Web App URL in ENDPOINT first.');
+    return;
+  }
+  // Collect basic fields already present in this version
+  const w = Number(document.getElementById('wmm')?.value || 0);
+  const h = Number(document.getElementById('hmm')?.value || 0);
+  const client = document.getElementById('client')?.value || '';
+  const honeyColor = document.getElementById('honey_color')?.value || '';
+  const powder = document.getElementById('powder')?.value || '';
+  const mode = document.getElementById('mode')?.value || 'one'; // one/two/combo
+
+  // Grab the HOLD DISTANCES values exactly as shown (keeps your numbers)
+  const holdBody = document.getElementById('hold_body');
+  const holdInputs = holdBody ? holdBody.querySelectorAll('input') : [];
+  const holdDistances = Array.from(holdInputs).map(inp => Number(inp.value || 0)).filter(v => !Number.isNaN(v));
+
+  // Build a simple BOM (sample SKUs; replace with real ones later)
+  const items = [];
+  if (mode === 'combo'){
+    items.push({ sku:'MESH-8FT-BLK', qty: 1 });
+  }
+  // Use hold distances if you map them to cut points later; for now we just include W/H as notes
+  items.push({ sku:'WL3007', qty:2, length_mm: Math.max(0, h - 51) });
+  items.push({ sku:'WL3007-TOP', qty:1, length_mm: Math.max(0, w - 51) });
+  items.push({ sku:'LOCK-PREM', qty:1 });
+
+  const bom = {
+    action: 'reserve',
+    job_id: 'JOB-' + Date.now(),
+    customer: client || 'Walk-in',
+    calculator: 'Honeycomb Combo v4 (White)',
+    status: 'RESERVED',
+    notes: `HC:${honeyColor} ${powder ? 'Powder:'+powder : ''} | Hold:` + holdDistances.join(','),
+    items
+  };
+
+  try{
+    const res = await fetch(ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(bom)
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.message || 'Save failed');
+    alert('Saved! Reservation ID: ' + data.reservation_id);
+  }catch(err){
+    alert('Inventory error: ' + err.message);
+    console.error(err);
+  }
+}
+</script>
+
+</body>
+</html>
+
+<script>
+// Save + Remnant functions
+var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
 
 function saveToSheets() {
   var w = +document.getElementById('wmm').value || 0;
   var h = +document.getElementById('hmm').value || 0;
   if (!w || !h) { alert('Please enter Width and Height first.'); return; }
   var btn = document.getElementById('save_btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Saving…';
-  var mode        = document.getElementById('mode').value;
-  var isRepair    = document.getElementById('replacement') ? document.getElementById('replacement').value === 'yes' : false;
-  var hcFoldDiv   = +document.getElementById('hc_fold_div').value || 7.5;
-  var meshFoldDiv = +document.getElementById('mesh_fold_div').value || 20;
-  var hcDed       = +document.getElementById('hc_ded').value || 35;
-  var meshDed     = +document.getElementById('mesh_ded').value || 40;
-  var pcs         = (mode === 'honeycomb2') ? 2 : 1;
-  var hcHeight    = h - hcDed;
-  var baseFold    = Math.round(w / hcFoldDiv);
-  var hcFold      = Math.round(baseFold / pcs);
-  var ts          = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
+  btn.disabled = true; btn.textContent = '⏳ Saving…';
+  var mode      = document.getElementById('mode').value;
+  var isRepair  = document.getElementById('replacement') ? document.getElementById('replacement').value === 'yes' : false;
+  var hcDed     = +document.getElementById('hc_ded').value || 35;
+  var meshDed   = +document.getElementById('mesh_ded').value || 40;
+  var hcFoldDiv = +document.getElementById('hc_fold_div').value || 7.5;
+  var pcs       = (mode === 'honeycomb2') ? 2 : 1;
+  var hcHeight  = h - hcDed;
+  var hcFold    = Math.round(Math.round(w / hcFoldDiv) / pcs);
+  var ts        = new Date().toLocaleString('en-PH', {timeZone:'Asia/Manila'});
   var hcColorBase = document.getElementById('hc_color').value;
-  var has24m      = (hcColorBase === 'HC Choco Cindy 2013' || hcColorBase === 'HC Light Brown 2013');
-  var rollHeight  = (has24m && hcHeight <= 2400) ? '2.4m' : '3m';
-  var hcColorKey  = hcColorBase + ' ' + rollHeight;
-  var cut_side    = h - 51;
-  var cut_top     = w - 51;
-  var cut_bottom  = w - 51;
-  var cut_inner   = h - meshDed;
-  var cut_middle  = h - 100;
-  var cut_pvc     = h - meshDed;
-  var middle_qty  = (mode === 'honeycomb1') ? 1 : 2;
-  var pvc_qty     = (mode === 'honeycomb1') ? 2 : 4;
-  var deductions  = [];
-  if (!isRepair) {
-    deductions.push({ key: 'X023 Side Frame',       qty: (2*cut_side + cut_bottom) / 5800 });
-    deductions.push({ key: 'X022 Top Rail',          qty: cut_top / 5800 });
-    deductions.push({ key: 'X024 Inner Side Frame',  qty: (2 * cut_inner) / 5800 });
-    deductions.push({ key: 'X025 Pull Rod',          qty: (middle_qty * cut_middle) / 5800 });
-    deductions.push({ key: 'PVC Strip',              qty: pvc_qty });
-    deductions.push({ key: 'Double Sided Tape Roll', qty: (pvc_qty * cut_pvc / 1000) / 50 });
-    var hc_folds_total = hcFold * pcs;
-    deductions.push({ key: hcColorKey,               qty: hc_folds_total / 1330 });
-    var rope_sizes = h <= 1000 ? 4 : h <= 2000 ? 6 : 8;
-    deductions.push({ key: 'Rope Black 1600m/roll',  qty: (rope_sizes/2) * ((h-35)/1000) * 2 / 1600 });
+  var has24m    = (hcColorBase==='HC Choco Cindy 2013'||hcColorBase==='HC Light Brown 2013');
+  var rollH     = (has24m && hcHeight<=2400) ? '2.4m' : '3m';
+  var cut_side  = h-51, cut_top=w-51, cut_bottom=w-51;
+  var cut_inner = h-meshDed, cut_middle=h-100, cut_pvc=h-meshDed;
+  var mid_qty   = (mode==='honeycomb1')?1:2;
+  var pvc_qty   = (mode==='honeycomb1')?2:4;
+  var ded = [];
+  if(!isRepair) {
+    ded.push({key:'X023 Side Frame',      qty:(2*cut_side+cut_bottom)/5800});
+    ded.push({key:'X022 Top Rail',         qty:cut_top/5800});
+    ded.push({key:'X024 Inner Side Frame', qty:(2*cut_inner)/5800});
+    ded.push({key:'X025 Pull Rod',         qty:(mid_qty*cut_middle)/5800});
+    ded.push({key:'PVC Strip',             qty:pvc_qty});
+    ded.push({key:'Double Sided Tape Roll',qty:(pvc_qty*cut_pvc/1000)/50});
+    ded.push({key:hcColorBase+' '+rollH,  qty:(hcFold*pcs)/1330});
+    var rs=h<=1000?4:h<=2000?6:8;
+    ded.push({key:'Rope Black 1600m/roll', qty:(rs/2)*((h-35)/1000)*2/1600});
   }
-  var headers = ['Timestamp','Mode','Client','Branch','Replacement','Width (mm)','Height (mm)','HC Color','HC Roll Height','Mesh Color','Accessories Color','Powdercoat','Notes','HC Height','HC Fold','Cut Side Frame (mm)','Cut Top (mm)','Cut Bottom (mm)','Cut Inner Frame (mm)','Cut Middle (mm)','Cut PVC (mm)','Total Cost (RMB)','Total Cost (PHP)','Selling Price (PHP)','Markup %'];
-  var modeLabel   = mode === 'honeycomb1' ? 'One Way' : mode === 'honeycomb2' ? 'Two Way' : 'Combo';
-  var meshColorEl = document.getElementById('meshcolor');
-  var accColorEl  = document.getElementById('acc_color');
-  var row = [ts, modeLabel, document.getElementById('client').value.trim()||'—', document.getElementById('branch').value, isRepair?'Yes':'No', w, h, hcColorBase, rollHeight, meshColorEl?meshColorEl.value:'', accColorEl?accColorEl.value:'', document.getElementById('powder').value.trim()||'', document.getElementById('notes').value.trim()||'', hcHeight, hcFold, cut_side, cut_top, cut_bottom, cut_inner, cut_middle, cut_pvc, 0, 0, 0, 0];
-  fetch(SHEETS_SCRIPT_URL, {
-    method:'POST', mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'append_row_v2', tab:'Honeycomb', headers:headers, priceRow:[], row:row, deductions:deductions, productLine:'Honeycomb'})
-  }).then(function(){
-    btn.disabled = false;
-    btn.textContent = '✅ Saved!';
-    btn.style.background = '#166534';
-    btn.style.color = '#fff';
-    setTimeout(function(){ btn.textContent='💾 Save to Google Sheets'; btn.style.background=''; btn.style.color=''; }, 3000);
-  }).catch(function(){
-    btn.disabled = false;
-    btn.textContent = '💾 Save to Google Sheets';
-    alert('Save failed. Check internet connection.');
-  });
+  var hdr=['Timestamp','Mode','Client','Branch','Replacement','Width (mm)','Height (mm)','HC Color','HC Roll Height','Mesh Color','Accessories Color','Powdercoat','Notes','HC Height','HC Fold','Cut Side Frame (mm)','Cut Top (mm)','Cut Bottom (mm)','Cut Inner Frame (mm)','Cut Middle (mm)','Cut PVC (mm)','Total Cost (RMB)','Total Cost (PHP)','Selling Price (PHP)','Markup %'];
+  var ml=document.getElementById('meshcolor'), al=document.getElementById('acc_color');
+  var row=[ts,mode==='honeycomb1'?'One Way':mode==='honeycomb2'?'Two Way':'Combo',
+    document.getElementById('client').value.trim()||'—',
+    document.getElementById('branch').value,isRepair?'Yes':'No',
+    w,h,hcColorBase,rollH,ml?ml.value:'',al?al.value:'',
+    document.getElementById('powder').value.trim()||'',
+    document.getElementById('notes').value.trim()||'',
+    hcHeight,hcFold,cut_side,cut_top,cut_bottom,cut_inner,cut_middle,cut_pvc,0,0,0,0];
+  fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'append_row_v2',tab:'Honeycomb',headers:hdr,priceRow:[],row:row,deductions:ded,productLine:'Honeycomb'})})
+  .then(function(){btn.disabled=false;btn.textContent='✅ Saved!';btn.style.background='#166534';btn.style.color='#fff';setTimeout(function(){btn.textContent='💾 Save to Google Sheets';btn.style.background='';btn.style.color='';},3000);})
+  .catch(function(){btn.disabled=false;btn.textContent='💾 Save to Google Sheets';alert('Save failed.');});
 }
 
-function checkRemnants(product, color, height, folds) {
-  var row = document.getElementById('remnant_row');
-  var msg = document.getElementById('remnant_msg');
-  if(!row || !msg || !height || !folds) return;
-  var url = SHEETS_SCRIPT_URL + '?action=getRemnants&product=' + encodeURIComponent(product) + '&color=' + encodeURIComponent(color) + '&height=' + height + '&folds=' + folds;
-  fetch(url).then(function(r){ return r.json(); }).then(function(data){
-    if(!data || data.status !== 'ok') return;
-    if(data.matches && data.matches.length > 0) {
-      var best = data.matches[0];
-      row.style.display=''; row.style.background='rgba(29,158,117,0.12)'; msg.style.color='#0F6E56';
-      msg.innerHTML = '&#10003; Remnant available! <strong>'+best.box+'</strong> — '+best.color+' | Height: '+best.height+'mm | Folds: '+best.folds+' <button onclick="useRemnant(''+best.box+'',''+best.product+'',''+best.color+'')" style="margin-left:8px;padding:2px 10px;background:#166534;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer">Use this</button>';
-    } else if(data.nearMatches && data.nearMatches.length > 0) {
-      var opts = data.nearMatches.map(function(m){ return '<strong>'+m.box+'</strong> ('+m.height+'mm | '+m.folds+' folds)'; }).join(', ');
-      row.style.display=''; row.style.background='rgba(186,117,23,0.10)'; msg.style.color='#854F0B';
-      msg.innerHTML = '&#9888; No exact match. Nearest: '+opts;
-    } else {
-      row.style.display=''; row.style.background='rgba(0,0,0,0.03)'; msg.style.color='#888888';
-      msg.innerHTML = 'No remnants available — use new roll.';
-    }
-  }).catch(function(){ if(row) row.style.display='none'; });
+function checkRemnants(product,color,height,folds){
+  var row=document.getElementById('remnant_row'),msg=document.getElementById('remnant_msg');
+  if(!row||!msg||!height||!folds) return;
+  fetch(SHEETS_URL+'?action=getRemnants&product='+encodeURIComponent(product)+'&color='+encodeURIComponent(color)+'&height='+height+'&folds='+folds)
+  .then(function(r){return r.json();}).then(function(d){
+    if(!d||d.status!=='ok') return;
+    if(d.matches&&d.matches.length>0){
+      var b=d.matches[0];row.style.display='';row.style.background='rgba(29,158,117,0.12)';msg.style.color='#0F6E56';
+      msg.innerHTML='&#10003; Remnant: <strong>'+b.box+'</strong> — '+b.color+' | '+b.height+'mm | '+b.folds+' folds <button onclick="useRemnant(''+b.box+'',''+b.product+'',''+b.color+'')" style="margin-left:8px;padding:2px 10px;background:#166534;color:white;border:none;border-radius:4px;font-size:11px;cursor:pointer">Use this</button>';
+    }else if(d.nearMatches&&d.nearMatches.length>0){
+      row.style.display='';row.style.background='rgba(186,117,23,0.10)';msg.style.color='#854F0B';
+      msg.innerHTML='&#9888; Nearest: '+d.nearMatches.map(function(m){return'<strong>'+m.box+'</strong> ('+m.height+'mm|'+m.folds+'folds)';}).join(', ');
+    }else{row.style.display='';row.style.background='rgba(0,0,0,0.03)';msg.style.color='#888';msg.innerHTML='No remnants — use new roll.';}
+  }).catch(function(){if(row)row.style.display='none';});
 }
 
-function useRemnant(box, product, color) {
-  if(!confirm('Mark '+box+' ('+color+') as Used?')) return;
-  fetch(SHEETS_SCRIPT_URL, {
-    method:'POST', mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'useRemnant', box:box, product:product, color:color})
-  }).then(function(){
-    var msg = document.getElementById('remnant_msg');
-    if(msg) msg.innerHTML = '&#10003; '+box+' marked as Used.';
-  });
+function useRemnant(box,product,color){
+  if(!confirm('Mark '+box+' as Used?')) return;
+  fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'useRemnant',box:box,product:product,color:color})})
+  .then(function(){var m=document.getElementById('remnant_msg');if(m)m.innerHTML='&#10003; '+box+' marked as Used.';});
 }
 </script>
-
-</body>
-</html>
