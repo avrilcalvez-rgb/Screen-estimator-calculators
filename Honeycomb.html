@@ -324,14 +324,16 @@
     $('hc_pcs').textContent = (pcs === 1 ? '1PCS' : '2PCS');
     $('hc_fold_out').textContent = hcFold;
 
-    // Auto-select roll height based on hcHeight
-    // hcHeight = h - 35 (hcDed default)
-    // Rolls available: 2.4m (2400mm) and 3m (3000mm)
-    var rollRec = hcHeight <= 2400 ? '2.4m' : '3m';
+    // Auto-select roll height based on color availability:
+    // Only Choco Cindy and Light Brown have 2.4m rolls
+    // All others only come in 3m
+    var hcColorVal = $('hc_color').value;
+    var has24m = (hcColorVal === 'HC Choco Cindy 2013' || hcColorVal === 'HC Light Brown 2013');
+    var rollRec = (has24m && hcHeight <= 2400) ? '2.4m' : '3m';
     var rollEl = $('hc_roll_rec');
     if(rollEl){
       rollEl.textContent = rollRec;
-      rollEl.style.color = hcHeight <= 2400 ? '#1D9E75' : '#BA7517';
+      rollEl.style.color = rollRec === '2.4m' ? '#1D9E75' : '#BA7517';
     }
 
     // Holes (Pleated)
@@ -407,8 +409,9 @@ function saveToSheets() {
   var meshFold    = Math.round(w / meshFoldDiv);
   var ts          = new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' });
 
-  // Auto-select roll height
-  var rollHeight  = hcHeight <= 2400 ? '2.4m' : '3m';
+  // Auto-select roll height based on color availability
+  var has24m     = (hcColorBase === 'HC Choco Cindy 2013' || hcColorBase === 'HC Light Brown 2013');
+  var rollHeight = (has24m && hcHeight <= 2400) ? '2.4m' : '3m';
   var hcColorBase = document.getElementById('hc_color').value; // e.g. "HC Choco Cindy 2013"
   var hcColorKey  = hcColorBase + ' ' + rollHeight;            // e.g. "HC Choco Cindy 2013 2.4m"
 
