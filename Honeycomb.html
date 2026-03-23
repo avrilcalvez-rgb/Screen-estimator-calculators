@@ -323,7 +323,7 @@
     $('hc_fold_out').textContent = hcFold;
     var hcColorVal = $('hc_color').value;
     var has24m = (hcColorVal==='HC Choco Cindy 2013'||hcColorVal==='HC Light Brown 2013');
-    var rollRec = (has24m && hcHeight<=2400)?'2.4m':'3m';
+    var rollRec = (has24m&&hcHeight<=2400)?'2.4m':'3m';
     var rollEl = $('hc_roll_rec');
     if(rollEl){rollEl.textContent=rollRec;rollEl.style.color=rollRec==='2.4m'?'#1D9E75':'#BA7517';}
     if(w>0&&h>0) checkRemnants('Honeycomb',hcColorVal,hcHeight,hcFold*pcs);
@@ -374,6 +374,7 @@
   });
 
   window.addEventListener('DOMContentLoaded', compute);
+
 
 // ── SAVE TO GOOGLE SHEETS ─────────────────────────────────────────────────────
 var SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
@@ -427,7 +428,7 @@ function saveToSheets(){
   .then(function(){btn.disabled=false;btn.textContent='✅ Saved!';
     setTimeout(function(){btn.textContent='💾 Save to Google Sheets';},3000);})
   .catch(function(){btn.disabled=false;btn.textContent='💾 Save to Google Sheets';
-    alert('Save failed. Check internet.');});
+    alert('Save failed.');});
 }
 
 function checkRemnants(product,color,height,folds){
@@ -450,7 +451,7 @@ function checkRemnants(product,color,height,folds){
     }else if(d.nearMatches&&d.nearMatches.length>0){
       row.style.display='';row.style.background='rgba(186,117,23,0.10)';msg.style.color='#854F0B';
       msg.innerHTML='&#9888; Nearest: '+d.nearMatches.map(function(m){
-        return'<strong>'+m.box+'</strong> ('+m.height+'mm|'+m.folds+'folds)';
+        return '<strong>'+m.box+'</strong> ('+m.height+'mm|'+m.folds+'folds)';
       }).join(', ');
     }else{
       row.style.display='';row.style.background='rgba(0,0,0,0.03)';msg.style.color='#888';
@@ -471,72 +472,9 @@ function useRemnant(box,product,color){
 </script>
 
 
-<!-- Save to Inventory Button (added) -->
-<div class="card no-print" style="margin-top:12px;text-align:center">
-  <button onclick="saveToInventory()">💾 Save to Inventory</button>
-</div>
 
-<script>
-/**
- * Save to Inventory (keeps your existing HOLD DISTANCES UI as-is)
- * Replace ENDPOINT with your Apps Script Web App URL
- * Example: const ENDPOINT = 'https://script.google.com/macros/s/XXXX/exec?action=reserve';
- */
-const ENDPOINT = 'PASTE_YOUR_WEB_APP_URL_HERE?action=reserve';
 
-async function saveToInventory(){
-  if (!ENDPOINT || ENDPOINT.indexOf('PASTE_YOUR_WEB_APP_URL_HERE') !== -1){
-    alert('Please set your Web App URL in ENDPOINT first.');
-    return;
-  }
-  // Collect basic fields already present in this version
-  const w = Number(document.getElementById('wmm')?.value || 0);
-  const h = Number(document.getElementById('hmm')?.value || 0);
-  const client = document.getElementById('client')?.value || '';
-  const honeyColor = document.getElementById('honey_color')?.value || '';
-  const powder = document.getElementById('powder')?.value || '';
-  const mode = document.getElementById('mode')?.value || 'one'; // one/two/combo
 
-  // Grab the HOLD DISTANCES values exactly as shown (keeps your numbers)
-  const holdBody = document.getElementById('hold_body');
-  const holdInputs = holdBody ? holdBody.querySelectorAll('input') : [];
-  const holdDistances = Array.from(holdInputs).map(inp => Number(inp.value || 0)).filter(v => !Number.isNaN(v));
-
-  // Build a simple BOM (sample SKUs; replace with real ones later)
-  const items = [];
-  if (mode === 'combo'){
-    items.push({ sku:'MESH-8FT-BLK', qty: 1 });
-  }
-  // Use hold distances if you map them to cut points later; for now we just include W/H as notes
-  items.push({ sku:'WL3007', qty:2, length_mm: Math.max(0, h - 51) });
-  items.push({ sku:'WL3007-TOP', qty:1, length_mm: Math.max(0, w - 51) });
-  items.push({ sku:'LOCK-PREM', qty:1 });
-
-  const bom = {
-    action: 'reserve',
-    job_id: 'JOB-' + Date.now(),
-    customer: client || 'Walk-in',
-    calculator: 'Honeycomb Combo v4 (White)',
-    status: 'RESERVED',
-    notes: `HC:${honeyColor} ${powder ? 'Powder:'+powder : ''} | Hold:` + holdDistances.join(','),
-    items
-  };
-
-  try{
-    const res = await fetch(ENDPOINT, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(bom)
-    });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.message || 'Save failed');
-    alert('Saved! Reservation ID: ' + data.reservation_id);
-  }catch(err){
-    alert('Inventory error: ' + err.message);
-    console.error(err);
-  }
-}
-</script>
 
 </body>
 </html>
