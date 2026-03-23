@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Honeycomb Combo Calculator — V4 (Live)</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: lavender; margin: 20px; }
+    .container { max-width: 1100px; margin: auto; display: grid; grid-template-columns: 380px 1fr; gap: 14px; }
+    .card { background: #ffffff; border: 1px solid #d2cce0; border-radius: 12px; padding: 14px; }
+    h1 { text-align: center; margin: 0 0 8px; }
+    h2 { margin: 0 0 10px; font-size: 15px; }
+    label { display: block; margin-top: 10px; font-size: 12px; color:#6b6575; }
+    select, input, textarea { width: 100%; padding: 8px 10px; margin-top: 6px; border-radius: 10px; border: 1px solid #d2cce0; }
+    .row { margin-bottom: 8px; }
+    .btns { display:flex; gap:8px; margin-top:10px }
+    button { padding:10px 12px; border-radius:10px; border:1px solid #d2cce0; background:white; cursor:pointer }
+    button.primary { background:#a855f7; color:white; border-color:#a855f7; font-weight:700 }
+    table { width:100%; border-collapse: collapse; font-size:13px; background:#fff }
+    th, td { border-bottom:1px solid #e6e0f2; padding:6px; text-align:left }
+    th { background:#ede7f6; color:#6b6575 }
+    .right { text-align:right }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .title-line { font-weight:900; font-size:20px; text-align:center; margin: 4px 0 10px; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .hidden { display:none !important; }
+    .pill { display:inline-block; padding:2px 8px; border:1px solid #d2cce0; border-radius:9999px; background:#ede7f6; font-size:12px; color:#6b6575 }
+  
+  /* Powdercoat highlight */
+  .pc-on{background:#fff7a3!important;border-color:#fde047!important;box-shadow:0 0 0 2px rgba(253,224,71,.35) inset}
+  .pc-badge{display:inline-block;background:#fff7a3;border:1px solid #fde047;border-radius:8px;padding:2px 6px;font-weight:700}
+
+</style>
+</head>
+<body>
+
+  <h1 id="title">Honeycomb Combo Calculator</h1>
+
+  <div class="container">
+    <!-- Left: Inputs -->
+    <section class="card">
+      <h2>Inputs</h2>
+
+      <div class="row">
+        <label for="mode">Select Mode:</label>
+        <select id="mode">
+          <option value="honeycomb1">Honeycomb One Way</option>
+          <option value="honeycomb2">Honeycomb Two Way</option>
+          <option value="combo">Honeycomb + Screen (Combo)</option>
+        </select>
+      </div>
+
+      <div class="grid2">
+        <div class="row">
+          <label for="wmm">Width (mm)</label>
+          <input id="wmm" type="number" step="1" value="1595">
+        </div>
+        <div class="row">
+          <label for="hmm">Height (mm)</label>
+          <input id="hmm" type="number" step="1" value="2110">
+        </div>
+      </div>
+
+      <div class="row" id="row_meshcolor">
+        <label for="meshcolor">Mesh Color (Combo only)</label>
+        <select id="meshcolor">
+          <option>Black</option>
+          <option>Gray</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="hc_color">Honeycomb Color</label>
+        <select id="hc_color">
+          <option>Light Brown</option>
+          <option>Choco</option>
+          <option>Light Gray</option>
+          <option>Gray</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="acc_color">Accessories Color</label>
+        <select id="acc_color"><option>White</option><option>Black</option></select>
+      </div>
+
+      <div class="row">
+        <label for="replacement">Replacement Only (hide aluminum cuttings)</label>
+        <select id="replacement"><option value="no">No</option><option value="yes">Yes – show honeycomb/mesh only</option></select>
+      </div>
+
+      <div class="row">
+        <label for="powder">Powdercoat Code</label>
+        <input id="powder" placeholder="e.g., PWD12345">
+      </div>
+
+      <div class="row">
+        <label for="client">Client</label>
+        <input id="client" placeholder="Client name">
+      </div>
+
+      <div class="row">
+        <label for="branch">Branch</label>
+        <select id="branch">
+          <option>Batangas Branch</option>
+          <option>Pampanga Branch</option>
+          <option>Shipping Thru AP Cargo</option>
+          <option>Shipping Thru Victory Drop & Go</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="notes">Notes</label>
+        <textarea id="notes" placeholder="Optional notes…"></textarea>
+      </div>
+
+      <h2>Tech Settings</h2>
+      <div class="grid2">
+        <div class="row">
+          <label for="mesh_ded">Mesh Height Deduction</label>
+          <input id="mesh_ded" type="number" step="1" value="40" title="mesh(H) = H − 40">
+        </div>
+        <div class="row">
+          <label for="hc_ded">Honeycomb Height Deduction</label>
+          <input id="hc_ded" type="number" step="1" value="35" title="honeycomb height = H − 35">
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="row">
+          <label for="mesh_fold_div">Mesh Fold Divisor</label>
+          <input id="mesh_fold_div" type="number" step="0.1" value="20" title="mesh(fold) = round(W / 20)">
+        </div>
+        <div class="row">
+          <label for="hc_fold_div">Honeycomb Fold Divisor</label>
+          <input id="hc_fold_div" type="number" step="0.1" value="7.5" title="base honeycomb fold = round(W / 7.5)">
+        </div>
+      </div>
+
+      <div class="btns">
+        <button class="primary" onclick="window.print()">Print / Screenshot</button>
+      </div>
+    </section>
+
+    <!-- Right: Outputs -->
+    <section class="card">
+      <div id="big_mode_header" class="title-line">HONEYCOMB ONLY ONE WAY</div>
+
+      <div class="grid2">
+        <div class="card" style="padding:10px">
+          <div><strong>Client:</strong> <span id="o_client" class="mono">—</span></div>
+          <div><strong>Mesh:</strong> <span id="o_mesh" class="mono">—</span></div>
+          <div><strong>Honeycomb:</strong> <span id="o_hc_color" class="mono">—</span></div>
+          <div><strong>Accessories:</strong> <span id="o_acc" class="mono">—</span></div>
+          <div><strong>Powdercoat:</strong> <span id="o_powder" class="mono">No</span></div>
+          <div><strong>Notes:</strong> <span id="o_notes" class="mono">—</span></div>
+        </div>
+        <div class="card" style="padding:10px">
+          <div><strong>Size (W×H):</strong> <span id="o_size" class="mono">—</span></div>
+          <div><strong>Branch:</strong> <span id="o_branch" class="mono">—</span></div>
+        </div>
+      </div>
+
+      <h2>Cuttings (mm)</h2>
+      <table id="cuttings_table">
+        <thead><tr><th>Material</th><th class="right">Qty</th><th class="right">Length (mm)</th></tr></thead>
+        <tbody id="cuttings_body">
+          <tr><td>Side frame (X023)</td><td class="right mono">x2</td><td class="right mono" id="len_side_frame">—</td></tr>
+          <tr><td>Top profile (X022)</td><td class="right mono">x1</td><td class="right mono" id="len_top_profile">—</td></tr>
+          <tr><td>PVC</td><td class="right mono">x1</td><td class="right mono" id="len_pvc">—</td></tr>
+          <tr><td>Bottom profile (X023)</td><td class="right mono">x1</td><td class="right mono" id="len_bottom_profile">—</td></tr>
+          <tr><td>Inner frame (X024)</td><td class="right mono">x2</td><td class="right mono" id="len_inner_frame">—</td></tr>
+          <tr><td>Middle profile (X025)</td><td class="right mono" id="qty_middle">x1</td><td class="right mono" id="len_middle_profile">—</td></tr>
+        </tbody>
+      </table>
+
+      <div class="grid2" style="margin-top:10px">
+        <div>
+          <h2>Mesh Details <span class="pill">shows in Combo</span></h2>
+          <table>
+            <thead><tr><th>Item</th><th>Color</th><th class="right">Value</th></tr></thead>
+            <tbody id="mesh_block">
+              <tr><td>mesh(H)</td><td id="mesh_color_cell">—</td><td class="right mono" id="mesh_h_value">—</td></tr>
+              <tr><td>mesh(fold)</td><td>—</td><td class="right mono" id="mesh_fold_value">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h2>Hold Distances</h2>
+          <table>
+            <thead><tr><th>Seq</th><th class="right">Distance (mm)</th></tr></thead>
+            <tbody id="holes_table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:10px">
+        <div>
+          <h2>Honeycomb Details</h2>
+          <table>
+            <thead><tr><th>Item</th><th class="right">Value</th></tr></thead>
+            <tbody>
+              <tr><td>Honeycomb Height</td><td class="right mono" id="hc_height_out">—</td></tr>
+              <tr><td>Honeycomb Fold - <span id="hc_pcs">1PCS</span></td><td class="right mono" id="hc_fold_out">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h2>Rope Sizes</h2>
+          <table>
+            <thead><tr><th>#</th><th class="right">Size (mm)</th><th class="right">pc</th></tr></thead>
+            <tbody id="rope_table"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function holesByHeight(h){
+    if (h <= 1000) return 4;
+    if (h <= 2000) return 6;
+    if (h <= 2500) return 8;
+    if (h <= 3000) return 10;
+    return 12;
+  }
+
+  function updateHeaderAndMeshVisibility(){
+    const mode = $('mode').value;
+    const header = $('big_mode_header');
+    const rowMesh = $('row_meshcolor');
+
+    if(mode === 'honeycomb2'){
+      header.textContent = 'HONEYCOMB ONLY TWO WAY';
+      rowMesh.classList.add('hidden');
+    }else if(mode === 'honeycomb1'){
+      header.textContent = 'HONEYCOMB ONLY ONE WAY';
+      rowMesh.classList.add('hidden');
+    }else{
+      header.textContent = 'HONEYCOMB + SCREEN (COMBO)';
+      rowMesh.classList.remove('hidden');
+    }
+  }
+
+  function compute(){
+    updateHeaderAndMeshVisibility();
+
+    const mode = $('mode').value;
+    const w = +$('wmm').value || 0;
+    const h = +$('hmm').value || 0;
+    const meshColor = $('meshcolor').value;
+    const accColor = $('acc_color') ? $('acc_color').value : '';
+    const replacementOnly = ($('replacement') && $('replacement').value === 'yes');
+    const hcColor = $('hc_color').value;
+    const client = $('client').value.trim();
+    const branch = $('branch').value;
+    const powder = $('powder').value.trim();
+    const notes = $('notes').value.trim();
+
+    const meshDed = +$('mesh_ded').value || 40;
+    const hcDed = +$('hc_ded').value || 35;
+    const meshFoldDiv = +$('mesh_fold_div').value || 20;
+    const hcFoldDiv = +$('hc_fold_div').value || 7.5;
+
+    // Meta
+    $('o_client').textContent = client || '—';
+    $('o_branch').textContent = branch;
+    $('o_size').textContent = `${w} × ${h}`;
+    $('o_mesh').textContent = (mode === 'combo') ? meshColor : '—';
+    $('o_acc').textContent = accColor || '—';
+    $('mesh_color_cell').textContent = (mode === 'combo') ? meshColor : '—';
+    $('o_hc_color').textContent = hcColor || '—';
+    $('o_notes').textContent = notes || '—';
+    /* NOTES-BADGE-APPLY */
+    (function(o){ if(!o) return; o.className = notes ? 'mono pc-badge' : 'mono'; })($('o_notes'));
+    $('o_powder').textContent = powder ? `Yes (${powder})` : 'No';
+    if (powder){ $('powder').classList.add('pc-on'); $('o_powder').className='mono pc-badge'; } else { $('powder').classList.remove('pc-on'); $('o_powder').className='mono'; }
+
+    const ct = $('cuttings_table'); if (ct) ct.style.display = replacementOnly ? 'none' : '';
+
+    if(!w || !h){ 
+      $('holes_table').innerHTML = '';
+      $('rope_table').innerHTML = '';
+      $('hc_height_out').textContent = '—';
+      $('hc_fold_out').textContent = '—';
+      return; 
+    }
+
+    // Cuttings (Pleated rules)
+    $('len_side_frame').textContent     = h - 51;
+    $('len_top_profile').textContent    = w - 51;
+    $('len_pvc').textContent            = h - meshDed;
+    $('len_bottom_profile').textContent = w - 51;
+    $('len_inner_frame').textContent    = h - meshDed;
+    $('len_middle_profile').textContent = h - 100;
+    $('qty_middle').textContent = (mode === 'honeycomb1') ? 'x1' : 'x2';
+
+    // Mesh block (show only in Combo)
+    const showMesh = (mode === 'combo');
+    document.getElementById('mesh_block').style.display = showMesh ? '' : 'none';
+
+    if(showMesh){
+      const meshH = h - meshDed;
+      const meshFold = Math.round(w / meshFoldDiv);
+      $('mesh_h_value').textContent = meshH;
+      $('mesh_fold_value').textContent = meshFold;
+    }
+
+    // Honeycomb
+    const pcs = (mode === 'honeycomb2') ? 2 : 1;
+    const hcHeight = h - hcDed;
+    const baseFold = Math.round(w / hcFoldDiv);
+    const hcFold = Math.round(baseFold / pcs);
+
+    $('hc_height_out').textContent = hcHeight;
+    $('hc_pcs').textContent = (pcs === 1 ? '1PCS' : '2PCS');
+    $('hc_fold_out').textContent = hcFold;
+
+    // Holes (Pleated)
+    const meshHforHoles = h - meshDed;
+    let holes = holesByHeight(h);
+    const gapOf = (n)=> (meshHforHoles - 60) / (n - 1);
+    let gap = gapOf(holes);
+    while (gap > 350 && holes < 12){
+      holes = (holes===4?6:holes===6?8:holes===8?10:12);
+      gap = gapOf(holes);
+    }
+    const holesBody = $('holes_table');
+    holesBody.innerHTML = '';
+    let pos = 30;
+    for(let i=1;i<=holes;i++){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i}</td><td class="right mono">${Math.round(pos)}</td>`;
+      holesBody.appendChild(tr);
+      pos += gap;
+    }
+
+    // Rope sizes
+    const maxRopes = Math.min(Math.floor(holes/2), 6);
+    const firstRope = w + h + 300;
+    const qty = (mode === 'honeycomb1') ? 2 : 4;
+    const ropeBody = $('rope_table');
+    ropeBody.innerHTML = '';
+    for(let i=0;i<maxRopes;i++){
+      const val = Math.round(firstRope - i*gap);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i+1}</td><td class="right mono">${val}</td><td class="right mono">${qty}</td>`;
+      ropeBody.appendChild(tr);
+    }
+  }
+
+  // --- LIVE AUTO-REFRESH ---
+  const inputs = [
+    'mode','wmm','hmm','meshcolor','hc_color','powder','client','branch','notes',
+    'mesh_ded','hc_ded','mesh_fold_div','hc_fold_div','acc_color','replacement'
+  ].map($);
+
+  inputs.forEach(el => {
+    if(!el) return;
+    const evt = (el.tagName === 'SELECT') ? 'change' : 'input';
+    el.addEventListener(evt, compute);
+  });
+
+  window.addEventListener('DOMContentLoaded', compute);
+</script>
+
+
+<!-- Save to Google Sheet Button -->
+<script>
+var SHEETS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0K4SpsR1NU_OFHcnYkVtit8msZwCrOtB6e_66swXsAB25DlKCdxAjcMK1rZfNGxFRWA/exec';
+
+function saveToSheets(){
+  var w      = +document.getElementById('wmm').value || 0;
+  var h      = +document.getElementById('hmm').value || 0;
+  var mode   = document.getElementById('mode').value;
+  var client = document.getElementById('client').value.trim() || '—';
+  var branch = document.getElementById('branch').value;
+  var powder = document.getElementById('powder').value.trim() || 'No';
+  var notes  = document.getElementById('notes').value.trim() || '—';
+  var hcColor   = document.getElementById('hc_color').value;
+  var accColor  = document.getElementById('acc_color').value;
+  var meshColor = (mode === 'combo') ? document.getElementById('meshcolor').value : '—';
+  var replacement = document.getElementById('replacement').value;
+
+  var meshDed    = +document.getElementById('mesh_ded').value || 40;
+  var hcDed      = +document.getElementById('hc_ded').value || 35;
+  var meshFoldDiv = +document.getElementById('mesh_fold_div').value || 20;
+  var hcFoldDiv   = +document.getElementById('hc_fold_div').value || 7.5;
+
+  var modeLabel = mode === 'honeycomb1' ? 'Honeycomb One Way' : mode === 'honeycomb2' ? 'Honeycomb Two Way' : 'Honeycomb + Screen (Combo)';
+
+  // Cuttings
+  var sideFrame    = h - 51;
+  var topProfile   = w - 51;
+  var pvc          = h - meshDed;
+  var bottomProfile = w - 51;
+  var innerFrame   = h - meshDed;
+  var middleProfile = h - 100;
+  var middleQty    = (mode === 'honeycomb1') ? 1 : 2;
+
+  // Mesh (combo only)
+  var meshH    = (mode === 'combo') ? h - meshDed : '—';
+  var meshFold = (mode === 'combo') ? Math.round(w / meshFoldDiv) : '—';
+
+  // Honeycomb
+  var pcs      = (mode === 'honeycomb2') ? 2 : 1;
+  var hcHeight = h - hcDed;
+  var baseFold = Math.round(w / hcFoldDiv);
+  var hcFold   = Math.round(baseFold / pcs);
+
+  // Holes
+  function holesByHeight(h){ if(h<=1000) return 4; if(h<=2000) return 6; if(h<=2500) return 8; if(h<=3000) return 10; return 12; }
+  var meshHforHoles = h - meshDed;
+  var holes = holesByHeight(h);
+  var gapOf = function(n){ return (meshHforHoles - 60) / (n - 1); };
+  var gap = gapOf(holes);
+  while(gap > 350 && holes < 12){ holes = (holes===4?6:holes===6?8:holes===8?10:12); gap = gapOf(holes); }
+  var holesList = [];
+  var pos = 30;
+  for(var i=1;i<=holes;i++){ holesList.push(Math.round(pos)); pos += gap; }
+
+  // Rope
+  var maxRopes = Math.min(Math.floor(holes/2), 6);
+  var firstRope = w + h + 300;
+  var ropeQty = (mode === 'honeycomb1') ? 2 : 4;
+  var ropeList = [];
+  for(var j=0;j<maxRopes;j++){ ropeList.push(Math.round(firstRope - j*gap) + 'mm×' + ropeQty); }
+
+  var ts = new Date().toLocaleString('en-PH', {timeZone:'Asia/Manila'});
+
+  var headers = [
+    'Timestamp','Client','Branch','Mode','Width (mm)','Height (mm)',
+    'Honeycomb Color','Accessories Color','Mesh Color','Replacement Only',
+    'Side Frame (X023) ×2','Top Profile (X022) ×1','PVC ×1','Bottom Profile (X023) ×1',
+    'Inner Frame (X024) ×2','Middle Profile (X025) qty','Middle Profile Length',
+    'Mesh H','Mesh Fold','HC Height','HC Fold','HC Pcs',
+    'Hold Distances','Rope Sizes',
+    'Powdercoat','Notes'
+  ];
+
+  var row = [
+    ts, client, branch, modeLabel, w, h,
+    hcColor, accColor, meshColor, replacement,
+    sideFrame, topProfile, pvc, bottomProfile,
+    innerFrame, middleQty, middleProfile,
+    meshH, meshFold, hcHeight, hcFold, pcs,
+    holesList.join(', '), ropeList.join(' | '),
+    powder, notes
+  ];
+
+  var btn = document.getElementById('save_gs_btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving…';
+
+  fetch(SHEETS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({action:'append_row_v2', tab:'Honeycomb Calculator', headers:headers, row:row, productLine:'Honeycomb'})
+  }).then(function(){
+    btn.disabled = false;
+    btn.textContent = '✅ Saved!';
+    setTimeout(function(){ btn.textContent = '💾 Save to Google Sheet'; }, 3000);
+  }).catch(function(){
+    btn.disabled = false;
+    btn.textContent = '💾 Save to Google Sheet';
+    alert('❌ Save failed. Check internet connection.');
+  });
+}
+</script>
+
+<div style="max-width:1100px;margin:12px auto;text-align:center" class="no-print">
+  <button id="save_gs_btn" onclick="saveToSheets()" style="padding:12px 28px;border-radius:10px;border:1px solid #a855f7;background:linear-gradient(135deg,#f59e0b,#facc15);color:#1a0a00;font-weight:700;font-size:14px;cursor:pointer;">💾 Save to Google Sheet</button>
+</div>
+
+</body>
+</html>
